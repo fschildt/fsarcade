@@ -1,8 +1,8 @@
 # fsarcade
 Tetris
-## compile and run on linux with a 60Hz monitor.
+## compile and run on linux
 ./compile.sh\
-./fsarcade
+./fsarcade\
 
 # Controls
 arrow keys for translation\
