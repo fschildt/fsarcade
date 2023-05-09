@@ -2,16 +2,17 @@
 
 #define PUSH_RENDER_ENTRY(stack, type)
 
-RenderGroup::RenderGroup(Stack *stack) {
-    // Todo: find optimal ratio
-    size_t size = 1024*1024;
-    float ratio = 0.7;
+RenderGroup::RenderGroup(uint8_t *memory, size_t memory_size) {
+    Stack stack(memory, memory_size);
 
-    size_t size_render_entries = size * ratio;
-    size_t size_sort_entries = size - size_render_entries;
+    int32_t max_render_entry_count = 1024;
+    size_t size_render_entries = max_render_entry_count * sizeof(RenderEntry);
+    size_t size_sort_entries = max_render_entry_count * sizeof(RenderSortEntry);
 
-    stack->MakeSubstack(&m_RenderEntries, size_render_entries);
-    stack->MakeSubstack(&m_SortEntries, size_sort_entries);
+    mRenderEntryCount = 0;
+    mMaxRenderEntryCount = max_render_entry_count;
+    mRenderEntries = (RenderEntry*)stack.Push(size_render_entries);
+    mRenderSortEntries = (RenderSortEntry*)stack.Push(size_sort_entries);
 }
 
 void RenderGroup::SetScale(float xmax, float ymax) {
@@ -20,45 +21,49 @@ void RenderGroup::SetScale(float xmax, float ymax) {
 }
 
 void RenderGroup::Reset() {
-    m_RenderEntries.Reset();
-    m_SortEntries.Reset();
+    mRenderEntryCount = 0;
     m_XMax = 0;
     m_YMax = 0;
 }
 
 void RenderGroup::PushClear(V3 color) {
-    RenderEntry_Clear *clear = PushRenderEntry<RenderEntry_Clear>(-1.f);
+    RenderEntry_Clear *clear = (RenderEntry_Clear*)PushRenderEntry();
     clear->type = RenderEntryType_Clear;
     clear->color = color;
 }
 
 void RenderGroup::PushRectangle(V3 pos, V2 dim, V3 color) {
-    RenderEntry_Rectangle *rect = PushRenderEntry<RenderEntry_Rectangle>(pos.z);
+    RenderEntry_Rectangle *rect = (RenderEntry_Rectangle*)PushRenderEntry();
     rect->type = RenderEntryType_Rectangle;
     rect->pos = pos;
     rect->dim = dim;
     rect->color = color;
 }
 
-template<typename T> T*
-RenderGroup::PushRenderEntry(float z) {
-    size_t size = sizeof(T);
-    T *render_entry = (T*)m_RenderEntries.Push(size);
-
-    RenderSortEntry *sort_entry = (RenderSortEntry*)m_SortEntries.Push(sizeof(RenderSortEntry));
-    sort_entry->z = z;
-    sort_entry->render_entry = render_entry;
-
-    return render_entry;
+RenderEntry *RenderGroup::PushRenderEntry() {
+    RenderEntry *entry = &mRenderEntries[mRenderEntryCount++];
+    return entry;
 }
 
 void RenderGroup::Sort() {
-    int32_t count = m_SortEntries.m_SizeUsed / sizeof(RenderSortEntry);
-    RenderSortEntry *sort_entries = (RenderSortEntry*)m_SortEntries.m_Memory;
+    int render_entry_count = mRenderEntryCount;
 
+    // make sort entry array
+    for (int32_t i = 0; i < render_entry_count; i++) {
+        RenderEntry *render_entry = mRenderEntries + i;
+        if (render_entry->type == RenderEntryType_Clear) {
+            mRenderSortEntries[i].z = -1;
+        } else if (render_entry->type == RenderEntryType_Rectangle) {
+            mRenderSortEntries[i].z = render_entry->rect.pos.z;
+        }
+        mRenderSortEntries[i].value = render_entry;
+    }
+
+    // sort array
     // Todo: use an efficient sorting algorithm and not bubblesort
-    for (int32_t i = 0; i < count-1; i++) {
-        for (int32_t j = 0; j < count-i-1; j++) {
+    RenderSortEntry *sort_entries = mRenderSortEntries;
+    for (int32_t i = 0; i < render_entry_count-1; i++) {
+        for (int32_t j = 0; j < render_entry_count-i-1; j++) {
             RenderSortEntry *entry0 = &sort_entries[j+0];
             RenderSortEntry *entry1 = &sort_entries[j+1];
             if (entry0->z > entry1->z) {

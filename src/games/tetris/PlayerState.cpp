@@ -19,12 +19,6 @@ void PlayerState::Init() {
     m_ActiveTetromino.InitRandomly();
     m_NextTetromino.InitRandomly();
 
-    // for debug purposes
-    V3 init_color = V3(1.0, 1.0, 1.0);
-    for (int i = 0; i < 200; i++) {
-        m_Colors[i] = init_color;
-    }
-
     srand(time(0));
 }
 

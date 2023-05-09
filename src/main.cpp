@@ -1,7 +1,10 @@
-#include <cstdint>
-#include <games/Game.h>
+#include "fsarcade_defs.h"
+#include <renderer/RenderGroup.h>
 #include <renderer/Renderer.h>
+#include <games/Game.h>
 
+
+#include <new>
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_video.h>
@@ -10,8 +13,6 @@
 #include <stdlib.h>
 #include <SDL2/SDL.h>
 #include <GL/gl.h>
-
-#define MEBIBYTES(x) (1024*1024*x)
 
 void GameInput::Gather(SDL_Window *window) {
     this->quit = false;
@@ -33,15 +34,15 @@ void GameInput::Gather(SDL_Window *window) {
         else if (event.type == SDL_KEYDOWN) {
             auto keycode = event.key.keysym.sym;
             if (keycode == SDLK_RIGHT) {
-                this->controller1.MoveRight = true;
+                this->controller.MoveRight = true;
             } else if (keycode == SDLK_LEFT) {
-                this->controller1.MoveLeft = true;
+                this->controller.MoveLeft = true;
             } else if (keycode == SDLK_DOWN) {
-                this->controller1.MoveDown = true;
+                this->controller.MoveDown = true;
             } else if (keycode == SDLK_z) {
-                this->controller1.ActionA = true;
+                this->controller.ActionA = true;
             } else if (keycode == SDLK_x) {
-                this->controller1.ActionB = true;
+                this->controller.ActionB = true;
             }
         }
     }
@@ -64,36 +65,39 @@ int main(int argc, char **argv)
     }
 
 
-    size_t memory_size = MEBIBYTES(32);
+    // Todo: find optimal values
+    size_t game_memory_size = MEBIBYTES(2);
+    size_t render_group_memory_size = MEBIBYTES(2);
+    size_t renderer_memory_size = MEBIBYTES(2);
+
+    size_t memory_size = game_memory_size + renderer_memory_size + render_group_memory_size;
     uint8_t *memory = (uint8_t*)malloc(memory_size);
-    Stack stack;
-    stack.Init(memory, memory_size);
+    Stack stack(memory, memory_size);
 
-    Renderer *renderer = Renderer::Select(Renderer::API_OPENGL, sdl_window, &stack);
-    RenderGroup render_group(&stack);
+    uint8_t *game_memory = (uint8_t*)stack.Push(game_memory_size);
+    uint8_t *render_group_memory = (uint8_t*)stack.Push(render_group_memory_size);
+    uint8_t *renderer_memory = (uint8_t*)stack.Push(renderer_memory_size);
 
-    Game *game = Game::Select(Game::TETRIS);
+    RenderGroup *render_group = new (render_group_memory) RenderGroup(render_group_memory + sizeof(RenderGroup), render_group_memory_size - sizeof(RenderGroup));
+    Renderer *renderer = Renderer::Select(Renderer::API_OPENGL, sdl_window, renderer_memory, renderer_memory_size);
+    Game *game = Game::Select(Game::TETRIS, game_memory, game_memory_size);
     game->Init();
-
 
     for (;;) {
         GameInput game_input = {};
         game_input.Gather(sdl_window);
 
-        static int counter = 0;
-//        printf("%d\n", counter++);
-
         if (game_input.quit) {
             break;
         }
 
-        game->Update(&game_input, &render_group);
+        game->Update(&game_input, render_group);
 
         int w, h;
         SDL_GetWindowSize(sdl_window, &w, &h);
-        renderer->Draw(&render_group, w, h);
+        renderer->Draw(render_group, w, h);
         renderer->Present();
-        render_group.Reset();
+        render_group->Reset();
     }
 }
 

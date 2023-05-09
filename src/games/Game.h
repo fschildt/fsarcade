@@ -1,7 +1,8 @@
 #pragma once
 
-#include <stdint.h>
+#include <fsarcade_defs.h>
 
+class Stack;
 class RenderGroup;
 struct SDL_Window;
 
@@ -18,10 +19,7 @@ struct GameController {
 
 struct GameInput {
     bool quit;
-
-    GameController controller1;
-    GameController controller2;
-
+    GameController controller;
     void Gather(SDL_Window *window);
 };
 
@@ -31,7 +29,7 @@ public:
         NO_GAME,
         TETRIS,
     };
-    static Game *Select(GameType);
+    static Game *Select(GameType type, uint8_t *memory, size_t memory_size);
 
 public:
     virtual void Init() = 0;

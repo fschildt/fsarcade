@@ -27,7 +27,7 @@ GlRenderer::~GlRenderer() {
     SDL_GL_DeleteContext(m_Context);
 }
 
-bool GlRenderer::Init(SDL_Window *sdl_window, Stack *stack) {
+bool GlRenderer::Init(SDL_Window *sdl_window, uint8_t *memory, size_t memory_size) {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     void *sdl_gl_context = SDL_GL_CreateContext(sdl_window);
@@ -59,8 +59,9 @@ bool GlRenderer::Init(SDL_Window *sdl_window, Stack *stack) {
         return false;
     }
 
-    m_VertexBuffer.Init(stack);
-    m_IndexBuffer.Init(stack);
+    Stack stack(memory, memory_size);
+    m_VertexBuffer.Init(&stack);
+    m_IndexBuffer.Init(&stack);
 
     m_Window = sdl_window;
     m_Context = sdl_gl_context;
@@ -71,18 +72,19 @@ void GlRenderer::Draw(RenderGroup *render_group, int width, int height) {
     glViewport(0, 0, width, height);
     render_group->Sort();
 
-    float last_z = -1;
+    float last_z = -2;
 
-    int32_t entry_count = render_group->m_SortEntries.m_SizeUsed / sizeof(RenderSortEntry);
-    RenderSortEntry *sort_entry = (RenderSortEntry*)render_group->m_SortEntries.m_Memory;
+    int32_t entry_count = render_group->mRenderEntryCount;
+    RenderSortEntry *sort_entry = (RenderSortEntry*)render_group->mRenderSortEntries;
     RenderSortEntry *max_sort_entry_plus_1 = sort_entry + entry_count;
     while (sort_entry < max_sort_entry_plus_1) {
-        RenderEntryType *type = (RenderEntryType*)sort_entry->render_entry;
+        RenderEntryType *type = (RenderEntryType*)sort_entry->value;
         switch (*type) {
             case RenderEntryType_Clear: {
                 RenderEntry_Clear *clear = (RenderEntry_Clear*)type;
                 glClearColor(clear->color.g, clear->color.g, clear->color.b, 1.f);
                 glClear(GL_COLOR_BUFFER_BIT);
+                last_z = -1;
             } break;
 
             case RenderEntryType_Rectangle: {
@@ -97,12 +99,14 @@ void GlRenderer::Draw(RenderGroup *render_group, int width, int height) {
                 // convert dim from [0, rg_max] to [ 0, 2]
                 float rg_xmax = render_group->m_XMax;
                 float rg_ymax = render_group->m_YMax;
-                rect->pos.x = 2*(rect->pos.x / rg_xmax) - 1;
-                rect->pos.y = 2*(rect->pos.y / rg_ymax) - 1;
-                rect->dim.x = 2*(rect->dim.x / rg_xmax);
-                rect->dim.y = 2*(rect->dim.y / rg_ymax);
+                V3 pos = rect->pos;
+                V2 dim = rect->dim;
+                pos.x = 2*(rect->pos.x / rg_xmax) - 1;
+                pos.y = 2*(rect->pos.y / rg_ymax) - 1;
+                dim.x = 2*(rect->dim.x / rg_xmax);
+                dim.y = 2*(rect->dim.y / rg_ymax);
 
-                m_VertexBuffer.PushRectangle(rect->pos, rect->dim, rect->color);
+                m_VertexBuffer.PushRectangle(pos, dim, rect->color);
                 m_IndexBuffer.PushRectangle();
             } break;
 

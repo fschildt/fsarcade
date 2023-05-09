@@ -7,7 +7,7 @@
 
 class GlRenderer : public Renderer {
 public:
-    bool Init(SDL_Window *window, Stack *stack) override;
+    bool Init(SDL_Window *window, uint8_t *memory, size_t memory_size) override;
     ~GlRenderer() override;
 
     void Draw(RenderGroup *render_group, int width, int height) override;
@@ -15,8 +15,6 @@ public:
 
 private:
     void DrawBatch();
-    V3 Normalize(V3 v);
-    V2 Normalize(V2 v);
 
 private:
     SDL_Window *m_Window;

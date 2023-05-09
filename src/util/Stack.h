@@ -5,7 +5,7 @@
 
 class Stack {
 public:
-    void Init(uint8_t *memory, size_t memory_size);
+    Stack(uint8_t *memory, size_t memory_size);
     void MakeSubstack(Stack *substack, size_t size);
     void Reset();
     void* Push(size_t size);

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdint.h>
+#include <fsarcade_defs.h>
 #include <math/math.h>
 #include <util/Stack.h>
 
@@ -21,16 +21,21 @@ struct RenderEntry_Rectangle {
     V3 color;
 };
 
-struct RenderSortEntry {
-    float z; // key
-    void *render_entry; // value
+union RenderEntry {
+    RenderEntryType type;
+    RenderEntry_Clear clear;
+    RenderEntry_Rectangle rect;
 };
 
-typedef RenderEntryType* RenderEntry;
+struct RenderSortEntry {
+    float z; // key
+    RenderEntry *value;
+};
+
 
 class RenderGroup {
 public:
-    RenderGroup(Stack *stack);
+    RenderGroup(uint8_t *memory, size_t memory_size);
     void Reset();
     void Sort();
 
@@ -40,7 +45,7 @@ public:
     void PushRectangle(V3 pos, V2 dim, V3 color);
 
 private:
-    template<typename T> T* PushRenderEntry(float z);
+    RenderEntry *PushRenderEntry();
 
 private:
     friend class GlRenderer;
@@ -48,7 +53,9 @@ private:
     float m_XMax;
     float m_YMax;
 
-    Stack m_RenderEntries;
-    Stack m_SortEntries;
+    int32_t mMaxRenderEntryCount;
+    int32_t mRenderEntryCount;
+    RenderEntry *mRenderEntries;
+    RenderSortEntry *mRenderSortEntries;
 };
 

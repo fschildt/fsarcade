@@ -3,7 +3,7 @@
 #include <string.h>
 #include <assert.h>
 
-void Stack::Init(uint8_t *memory, size_t memory_size) {
+Stack::Stack(uint8_t *memory, size_t memory_size) {
     m_SizeUsed = 0;
     m_SizeMax = memory_size;
     m_Memory = memory;
