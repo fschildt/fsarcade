@@ -15,15 +15,15 @@ RenderGroup::RenderGroup(uint8_t *memory, size_t memory_size) {
     mRenderSortEntries = (RenderSortEntry*)stack.Push(size_sort_entries);
 }
 
-void RenderGroup::SetScale(float xmax, float ymax) {
-    m_XMax = xmax;
-    m_YMax = ymax;
-}
-
 void RenderGroup::Reset() {
     mRenderEntryCount = 0;
     m_XMax = 0;
     m_YMax = 0;
+}
+
+void RenderGroup::SetSize(float xmax, float ymax) {
+    m_XMax = xmax;
+    m_YMax = ymax;
 }
 
 void RenderGroup::PushClear(V3 color) {
@@ -38,6 +38,13 @@ void RenderGroup::PushRectangle(V3 pos, V2 dim, V3 color) {
     rect->pos = pos;
     rect->dim = dim;
     rect->color = color;
+}
+
+void RenderGroup::PushText(V3 pos, char *text) {
+    RenderEntry_Text *t = (RenderEntry_Text*)PushRenderEntry();
+    t->type = RenderEntryType_Text;
+    t->pos = pos;
+    t->text = text;
 }
 
 RenderEntry *RenderGroup::PushRenderEntry() {
@@ -55,6 +62,8 @@ void RenderGroup::Sort() {
             mRenderSortEntries[i].z = -1;
         } else if (render_entry->type == RenderEntryType_Rectangle) {
             mRenderSortEntries[i].z = render_entry->rect.pos.z;
+        } else if (render_entry->type == RenderEntryType_Text) {
+            mRenderSortEntries[i].z = render_entry->text.pos.z;
         }
         mRenderSortEntries[i].value = render_entry;
     }

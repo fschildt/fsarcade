@@ -7,6 +7,7 @@
 enum RenderEntryType : int32_t {
     RenderEntryType_Clear,
     RenderEntryType_Rectangle,
+    RenderEntryType_Text,
 };
 
 struct RenderEntry_Clear {
@@ -21,10 +22,17 @@ struct RenderEntry_Rectangle {
     V3 color;
 };
 
+struct RenderEntry_Text {
+    RenderEntryType type;
+    V3 pos;
+    char *text;
+};
+
 union RenderEntry {
     RenderEntryType type;
     RenderEntry_Clear clear;
     RenderEntry_Rectangle rect;
+    RenderEntry_Rectangle text;
 };
 
 struct RenderSortEntry {
@@ -36,13 +44,14 @@ struct RenderSortEntry {
 class RenderGroup {
 public:
     RenderGroup(uint8_t *memory, size_t memory_size);
+    void SetSize(float xmax, float ymax);
     void Reset();
     void Sort();
 
 public:
-    void SetScale(float xmax, float ymax);
     void PushClear(V3 color);
     void PushRectangle(V3 pos, V2 dim, V3 color);
+    void PushText(V3 pos, char *text);
 
 private:
     RenderEntry *PushRenderEntry();

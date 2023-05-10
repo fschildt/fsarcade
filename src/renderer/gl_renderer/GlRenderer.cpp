@@ -43,9 +43,6 @@ bool GlRenderer::Init(SDL_Window *sdl_window, uint8_t *memory, size_t memory_siz
         return false;
     }
 
-    printf("%s\n", glGetString(GL_VERSION));
-
-    // During init, enable debug output
 #if 0
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(MessageCallback, 0);
@@ -75,6 +72,7 @@ void GlRenderer::Draw(RenderGroup *render_group, int width, int height) {
     float last_z = -2;
 
     int32_t entry_count = render_group->mRenderEntryCount;
+    if (entry_count == 0) return;
     RenderSortEntry *sort_entry = (RenderSortEntry*)render_group->mRenderSortEntries;
     RenderSortEntry *max_sort_entry_plus_1 = sort_entry + entry_count;
     while (sort_entry < max_sort_entry_plus_1) {
@@ -108,6 +106,16 @@ void GlRenderer::Draw(RenderGroup *render_group, int width, int height) {
 
                 m_VertexBuffer.PushRectangle(pos, dim, rect->color);
                 m_IndexBuffer.PushRectangle();
+            } break;
+
+            case RenderEntryType_Text: {
+                RenderEntry_Text *text = (RenderEntry_Text*)type;
+
+                if (text->pos.z > last_z && last_z >= 0.f) {
+                    DrawBatch();
+                    last_z = text->pos.z;
+                }
+
             } break;
 
             default: assert(0);
