@@ -69,6 +69,36 @@ void GlRenderer::Draw(RenderGroup *render_group, int width, int height) {
     glViewport(0, 0, width, height);
     render_group->Sort();
 
+
+
+    // find values which allows us to scale and center properly
+
+    float screen_ratio = (float) width / (float) height;
+    float rg_xmax = render_group->m_XMax;
+    float rg_ymax = render_group->m_YMax;
+    float potential_width_usage  = width / rg_xmax;
+    float potential_height_usage = height / rg_ymax;
+
+    float xoff;
+    float yoff;
+    float usable_width;
+    float usable_height;
+    if (potential_width_usage >= potential_height_usage) {
+        usable_width = width;
+        usable_height = width * screen_ratio;
+        xoff = 0;
+        yoff = (height - usable_height) / 2;
+    } else {
+        usable_height = height;
+        usable_width = height / screen_ratio;
+        xoff = (width - usable_width) / 2;
+        yoff = 0;
+    }
+
+
+
+    // draw batches
+
     float last_z = -2;
 
     int32_t entry_count = render_group->mRenderEntryCount;
@@ -93,10 +123,10 @@ void GlRenderer::Draw(RenderGroup *render_group, int width, int height) {
                     last_z = rect->pos.z;
                 }
 
+                // convert pos from [0, rg_max] to [{xoff,yoff}, {xoff+usable_width, yoff+usable_height}]
+
                 // convert pos from [0, rg_max] to [-1, 1]
                 // convert dim from [0, rg_max] to [ 0, 2]
-                float rg_xmax = render_group->m_XMax;
-                float rg_ymax = render_group->m_YMax;
                 V3 pos = rect->pos;
                 V2 dim = rect->dim;
                 pos.x = 2*(rect->pos.x / rg_xmax) - 1;

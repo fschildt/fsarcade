@@ -19,6 +19,7 @@ struct GameController {
 
 struct GameInput {
     bool quit;
+    uint64_t dt;
     GameController controller;
     void Gather(SDL_Window *window);
 };

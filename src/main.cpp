@@ -46,6 +46,12 @@ void GameInput::Gather(SDL_Window *window) {
             }
         }
     }
+
+    // Todo: this is not determistic (in the long run)
+    static uint64_t s_tlast = SDL_GetTicks64();
+    uint64_t tnow = SDL_GetTicks64();
+    this->dt = tnow - s_tlast;
+    s_tlast = tnow;
 }
 
 int main(int argc, char **argv)

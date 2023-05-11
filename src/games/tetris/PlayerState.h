@@ -6,7 +6,7 @@ struct GameController;
 
 class PlayerState {
 public:
-    void Update(const GameController *controller, RenderGroup *render_group);
+    void Update(const GameController *controller, uint64_t dt, RenderGroup *render_group);
     void Init();
 
 private:

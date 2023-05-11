@@ -22,8 +22,8 @@ void PlayerState::Init() {
     srand(time(0));
 }
 
-void PlayerState::Update(const GameController *controller, RenderGroup *render_group) {
-    // rotation
+void PlayerState::Update(const GameController *controller, uint64_t dt, RenderGroup *render_group) {
+    // find drotation
     uint16_t drotation = 0;
     if (controller->ActionA) {
         drotation = 3;
@@ -31,7 +31,7 @@ void PlayerState::Update(const GameController *controller, RenderGroup *render_g
         drotation = 1;
     }
 
-    // x translation
+    // find dx
     int8_t dx = 0;
     if (controller->MoveLeft) {
         dx = -1;
@@ -39,14 +39,20 @@ void PlayerState::Update(const GameController *controller, RenderGroup *render_g
         dx = 1;
     }
 
-    // y translation
-    int8_t dy = controller->MoveDown ? -1 : 0;
-    static int counter = 0;
-    if (counter++ == 60) {
+    // find dy
+    int8_t dy = 0;
+    static uint64_t time_since_last_drop = 0;
+    static uint64_t drop_speed_in_milliseconds = 1000; // 1 drop per second
+    time_since_last_drop += dt;
+    if (time_since_last_drop >= drop_speed_in_milliseconds) {
+        time_since_last_drop = time_since_last_drop - drop_speed_in_milliseconds;
         dy -= 1;
-        counter = 0;
+    }
+    if (controller->MoveDown) {
+        dy -= 1;
     }
 
+    // update
     bool updated = m_ActiveTetromino.Update(dx, dy, drotation, m_LineOccupations);
     if (!updated) {
         PlaceActiveTetromino();
