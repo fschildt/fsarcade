@@ -10,16 +10,48 @@
 #include <stdlib.h>
 
 void PlayerState::Init() {
+    srand(time(0));
+
     for (int i = 0; i < 3; i++) {
-        m_LineOccupations[i] = 0xffff;
+        m_LineOccupations[i] = 0xffff; // 1111111111111111
     }
     for (int i = 3; i < 23; i++) {
-        m_LineOccupations[i] = 0xe007;
+        m_LineOccupations[i] = 0xe007; // 1110000000000111
     }
     m_ActiveTetromino.InitRandomly();
     m_NextTetromino.InitRandomly();
 
-    srand(time(0));
+    m_StartLevel = 0;
+    m_CurrentLevel = 0;
+    m_Score = 0;
+    m_ClearedLines = 0;
+    for (auto piece_count : m_PieceCounts) {
+        piece_count = 0;
+    }
+}
+
+uint32_t PlayerState::GetDropSpeedInMilliseconds() {
+    uint32_t drop_speed;
+
+    // Todo: faster runtime with making a table and finding the index
+    uint16_t level = m_CurrentLevel;
+    if (level == 0) drop_speed = 400;
+    else if (level == 1) drop_speed = 375;
+    else if (level == 2) drop_speed = 350;
+    else if (level == 3) drop_speed = 325;
+    else if (level == 4) drop_speed = 300;
+    else if (level == 5) drop_speed = 275;
+    else if (level == 6) drop_speed = 250;
+    else if (level == 7) drop_speed = 225;
+    else if (level == 8) drop_speed = 200;
+    else if (level == 9) drop_speed = 180;
+    else if (level >= 10 && level <= 12) drop_speed = 150;
+    else if (level >= 13 && level <= 15) drop_speed = 120;
+    else if (level >= 16 && level <= 18) drop_speed = 90;
+    else if (level >= 19 && level <= 28) drop_speed = 60;
+    else drop_speed = 60;
+
+    return drop_speed;
 }
 
 void PlayerState::Update(const GameController *controller, uint64_t dt, RenderGroup *render_group) {
@@ -42,10 +74,10 @@ void PlayerState::Update(const GameController *controller, uint64_t dt, RenderGr
     // find dy
     int8_t dy = 0;
     static uint64_t time_since_last_drop = 0;
-    static uint64_t drop_speed_in_milliseconds = 1000; // 1 drop per second
+    uint64_t drop_speed_in_milliseconds = GetDropSpeedInMilliseconds();
     time_since_last_drop += dt;
-    if (time_since_last_drop >= drop_speed_in_milliseconds) {
-        time_since_last_drop = time_since_last_drop - drop_speed_in_milliseconds;
+    while (time_since_last_drop >= drop_speed_in_milliseconds) {
+        time_since_last_drop -= drop_speed_in_milliseconds;
         dy -= 1;
     }
     if (controller->MoveDown) {
@@ -75,14 +107,6 @@ void PlayerState::Draw(RenderGroup *render_group) {
                 V2 dim(0.8, 0.8);
                 V3 *color = &m_Colors[y_color * 10 + x_color];
                 render_group->PushRectangle(pos, dim, *color);
-            } else {
-#if 0
-                V3 pos(x_color + 0.1, y_color + 0.1, 0);
-                V2 dim(0.8, 0.8);
-                V3 color = V3(0.5f, 0.1f, 0.1);
-                render_group->PushRectangle(pos, dim, color);
-#endif
-
             }
         }
     }
@@ -113,30 +137,30 @@ void PlayerState::PlaceActiveTetromino() {
     }
 
     ClearFullLines(tetromino_y);
+    m_CurrentLevel = m_StartLevel + (m_ClearedLines / 10);
 }
 
-void PlayerState::ClearFullLines(int16_t y0) {
-    int16_t y = y0;
-    int16_t ymax = y0 + 3;
+void PlayerState::ClearFullLines(int16_t y) {
+    int16_t yoff = 0;
+    int16_t ymax;
     if (y <= 2) {
-        int16_t dy = 3 - y0;
-        y += dy;
-        ymax -= dy;
+        yoff = 3 - y;
     }
 
+    y += yoff;
+    ymax = y + 3 - yoff;
+
     int clear_count = 0;
-    while (y <= ymax) {
+    while (y <= ymax || clear_count) {
         if (m_LineOccupations[y] == 0xffff) {
             clear_count++;
         } else if(clear_count) {
             ClearFullLinesPart(y-clear_count, clear_count);
             y -= clear_count;
+            m_ClearedLines += clear_count;
             clear_count = 0;
         }
         y++;
-    }
-    if (clear_count) {
-        ClearFullLinesPart(y-clear_count, clear_count);
     }
 }
 
@@ -146,6 +170,8 @@ void PlayerState::ClearFullLinesPart(int16_t y0, int clear_count) {
     size_t size;
 
     int drop_count = 23 - y0 - 1;
+
+    // Todo: use own memory (see Tetris::Tetris(...)) instead of memmove
 
     // move lines down
     dest = &m_LineOccupations[y0];

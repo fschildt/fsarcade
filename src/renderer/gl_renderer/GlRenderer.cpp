@@ -52,13 +52,23 @@ bool GlRenderer::Init(SDL_Window *sdl_window, uint8_t *memory, size_t memory_siz
     glGenVertexArrays(1, &vertex_array);
     glBindVertexArray(vertex_array);
 
-    if (!m_Shader.InitProgram()) {
-        return false;
-    }
 
     Stack stack(memory, memory_size);
-    m_VertexBuffer.Init(&stack);
-    m_IndexBuffer.Init(&stack);
+
+    // init rectangle rendering
+    if (!m_RectangleShader.InitProgram()) {
+        return false;
+    }
+    m_RectangleVertexBuffer.Init(&stack);
+    m_RectangleIndexBuffer.Init(&stack);
+
+    // init text rendering
+    if (!m_TextShader.InitProgram()) {
+        return false;
+    }
+    m_TextVertexBuffer.Init(&stack);
+    m_TextIndexBuffer.Init(&stack);
+
 
     m_Window = sdl_window;
     m_Context = sdl_gl_context;
@@ -134,18 +144,25 @@ void GlRenderer::Draw(RenderGroup *render_group, int width, int height) {
                 dim.x = 2*(rect->dim.x / rg_xmax);
                 dim.y = 2*(rect->dim.y / rg_ymax);
 
-                m_VertexBuffer.PushRectangle(pos, dim, rect->color);
-                m_IndexBuffer.PushRectangle();
+                m_RectangleVertexBuffer.PushRectangle(pos, dim, rect->color);
+                m_RectangleIndexBuffer.PushRectangle();
             } break;
 
-            case RenderEntryType_Text: {
-                RenderEntry_Text *text = (RenderEntry_Text*)type;
+            case RenderEntryType_Bitmap: {
+                RenderEntry_Bitmap *bitmap = (RenderEntry_Bitmap*)type;
 
-                if (text->pos.z > last_z && last_z >= 0.f) {
+                if (bitmap->pos.z > last_z && last_z >= 0.f) {
                     DrawBatch();
-                    last_z = text->pos.z;
+                    last_z = bitmap->pos.z;
                 }
 
+#if 0
+                V3 pos = {};
+                V2 dim = {};
+                char c = 'A';
+                m_TextVertexBuffer.PushVertices();
+                m_TextIndexBuffer.PushIndices();
+#endif
             } break;
 
             default: assert(0);
@@ -162,21 +179,36 @@ void GlRenderer::Present() {
 }
 
 void GlRenderer::DrawBatch() {
-    if (m_IndexBuffer.GetCount() == 0) {
-        return;
+    int rectangle_index_count = m_RectangleIndexBuffer.GetCount();
+    int text_index_count = m_TextIndexBuffer.GetCount();
+
+    if (rectangle_index_count) {
+        // setup
+        m_RectangleVertexBuffer.TransferData();
+        m_RectangleIndexBuffer.TransferData();
+        m_RectangleShader.UseProgram();
+
+        // draw
+        glDrawElements(GL_TRIANGLES, rectangle_index_count, GL_UNSIGNED_INT, 0);
+
+        // reset
+        m_RectangleVertexBuffer.Reset();
+        m_RectangleIndexBuffer.Reset();
     }
+    
+    if (text_index_count) {
+        // setup
+        m_TextVertexBuffer.TransferData();
+        m_TextIndexBuffer.TransferData();
+        m_TextShader.UseProgram();
 
-    // draw
-    m_VertexBuffer.TransferData();
-    m_IndexBuffer.TransferData();
-    m_Shader.UseProgram();
-    int index_count = m_IndexBuffer.GetCount();
-    glDrawElements(GL_TRIANGLES, index_count, GL_UNSIGNED_INT, 0);
+        // draw
+        glDrawElements(GL_TRIANGLES, text_index_count, GL_UNSIGNED_INT, 0);
 
-    // reset
-    m_VertexBuffer.Reset();
-    m_IndexBuffer.Reset();
-    glUseProgram(0);
+        // reset
+        m_TextVertexBuffer.Reset();
+        m_TextIndexBuffer.Reset();
+    }
 }
 
 

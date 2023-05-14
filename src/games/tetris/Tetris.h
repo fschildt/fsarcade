@@ -7,8 +7,8 @@ class Tetromino;
 
 class Tetris : public Game {
 public:
-    Tetris(void *memory, size_t memory_size);
-    void Init() override;
+    Tetris() = default;
+    void Init(uint8_t *memory, size_t memory_size, GameFont *font) override;
     void Update(const GameInput *input, RenderGroup *renderer_group) override;
 private:
     PlayerState m_PlayerState;

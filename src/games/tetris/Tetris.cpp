@@ -5,11 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 
-Tetris::Tetris(void *memory, size_t memory_size) {
-    // we're not using extra memory atm
-}
-
-void Tetris::Init() {
+void Tetris::Init(uint8_t *memory, size_t memory_size, GameFont *font) {
     m_PlayerState.Init();
 }
 

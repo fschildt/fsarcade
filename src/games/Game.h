@@ -17,12 +17,21 @@ struct GameController {
     bool Exit = false;
 };
 
+struct GameGlyph {
+    int x;
+};
+
+struct GameFont {
+    GameGlyph glyphs[2];
+};
+
 struct GameInput {
     bool quit;
     uint64_t dt;
     GameController controller;
     void Gather(SDL_Window *window);
 };
+
 
 class Game {
 public:
@@ -33,7 +42,7 @@ public:
     static Game *Select(GameType type, uint8_t *memory, size_t memory_size);
 
 public:
-    virtual void Init() = 0;
+    virtual void Init(uint8_t *memory, size_t memory_size, GameFont *font) = 0;
     virtual void Update(const GameInput *input, RenderGroup *render_group) = 0;
 };
 

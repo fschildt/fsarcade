@@ -47,7 +47,6 @@ void GlIndexBuffer::PushRectangle() {
 
 void GlIndexBuffer::TransferData() {
     size_t size = m_Count * sizeof(uint32_t);
-    printf("transfering %d/%d indices\n", m_Count, m_MaxCount);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, m_Indices, GL_DYNAMIC_DRAW);
 }
 

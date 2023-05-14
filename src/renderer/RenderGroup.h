@@ -7,7 +7,7 @@
 enum RenderEntryType : int32_t {
     RenderEntryType_Clear,
     RenderEntryType_Rectangle,
-    RenderEntryType_Text,
+    RenderEntryType_Bitmap,
 };
 
 struct RenderEntry_Clear {
@@ -22,17 +22,19 @@ struct RenderEntry_Rectangle {
     V3 color;
 };
 
-struct RenderEntry_Text {
+struct RenderEntry_Bitmap {
     RenderEntryType type;
     V3 pos;
-    char *text;
+    int32_t width;
+    int32_t height;
+    void *bitmap;
 };
 
 union RenderEntry {
     RenderEntryType type;
     RenderEntry_Clear clear;
     RenderEntry_Rectangle rect;
-    RenderEntry_Rectangle text;
+    RenderEntry_Bitmap bitmap;
 };
 
 struct RenderSortEntry {
@@ -51,7 +53,7 @@ public:
 public:
     void PushClear(V3 color);
     void PushRectangle(V3 pos, V2 dim, V3 color);
-    void PushText(V3 pos, char *text);
+    void PushBitmap(V3 pos, int32_t width, int32_t height, void *bitmap);
 
 private:
     RenderEntry *PushRenderEntry();

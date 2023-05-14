@@ -52,7 +52,6 @@ void GlVertexBuffer::PushRectangle(V3 pos, V2 dim, V3 color) {
 
 void GlVertexBuffer::TransferData() {
     size_t size = m_Count * sizeof(GlVertex);
-    printf("transfering %d/%d vertices\n", m_Count, m_MaxCount);
     glBufferData(GL_ARRAY_BUFFER, size, m_Vertices, GL_DYNAMIC_DRAW);
 
     GLsizei stride = sizeof(GlVertex);

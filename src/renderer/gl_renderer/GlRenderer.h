@@ -20,8 +20,11 @@ private:
     SDL_Window *m_Window;
     void *m_Context = 0;
 
-    GlShader m_Shader;
-    uint32_t m_VertexArray;
-    GlVertexBuffer m_VertexBuffer;
-    GlIndexBuffer m_IndexBuffer;
+    GlVertexBuffer m_RectangleVertexBuffer;
+    GlIndexBuffer m_RectangleIndexBuffer;
+    GlShader m_RectangleShader;
+
+    GlVertexBuffer m_TextVertexBuffer;
+    GlIndexBuffer m_TextIndexBuffer;
+    GlShader m_TextShader;
 };

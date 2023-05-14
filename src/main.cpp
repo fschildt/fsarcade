@@ -87,7 +87,6 @@ int main(int argc, char **argv)
     RenderGroup *render_group = new (render_group_memory) RenderGroup(render_group_memory + sizeof(RenderGroup), render_group_memory_size - sizeof(RenderGroup));
     Renderer *renderer = Renderer::Select(Renderer::API_OPENGL, sdl_window, renderer_memory, renderer_memory_size);
     Game *game = Game::Select(Game::TETRIS, game_memory, game_memory_size);
-    game->Init();
 
     for (;;) {
         GameInput game_input = {};
