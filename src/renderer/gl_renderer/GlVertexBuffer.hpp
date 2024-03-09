@@ -1,6 +1,5 @@
 #pragma once
 
-#include <util/MemArena.hpp>
 #include <renderer/Renderer.hpp>
 
 struct GlVertex {
@@ -10,7 +9,7 @@ struct GlVertex {
 
 class GlVertexBuffer {
 public:
-    void Init(MemArena *arena);
+    void Init();
     void Reset();
 
 public:
@@ -22,8 +21,6 @@ public:
 
 private:
     uint32_t m_Id;
-    uint32_t m_Count;
-    uint32_t m_MaxCount;
-    GlVertex *m_Vertices;
+    std::vector<GlVertex> m_Vertices;
 };
 

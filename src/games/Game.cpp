@@ -4,13 +4,13 @@
 #include <new>
 #include <assert.h>
 
-Game* Game::Select(GameType type, uint8_t *memory, size_t memory_size) {
+Game* Game::Select(GameType type) {
     Game *game = 0;
 
     switch (type) {
         case TETRIS: {
-            game = new (memory) Tetris();
-            game->Init(memory + sizeof(Tetris), memory_size - sizeof(Tetris));
+            game = new Tetris();
+            game->Init();
         } break;
 
         default: assert(0);

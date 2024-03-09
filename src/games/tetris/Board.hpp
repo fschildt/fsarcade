@@ -1,6 +1,6 @@
 #pragma once
 
-#include <defs.hpp>
+#include <basic/defs.hpp>
 #include <renderer/RenderGroup.hpp>
 #include <games/tetris/Tetromino.hpp>
 
@@ -14,7 +14,7 @@ public:
     void Init();
     BoardUpdateResult Update(int32_t drotation, int32_t dx, int32_t dy);
     void SetTetromino(Tetromino tetromino);
-    void Draw(int32_t level, RenderGroup *render_group);
+    void Draw(int32_t level, RenderGroup& render_group);
 
 private:
     void PlaceTetromino();

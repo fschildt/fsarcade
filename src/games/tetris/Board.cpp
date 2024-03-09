@@ -97,7 +97,7 @@ int32_t Board::ClearRows() {
     return dropcount;
 }
 
-void Board::Draw(int32_t level, RenderGroup *render_group) {
+void Board::Draw(int32_t level, RenderGroup& render_group) {
     uint16_t *bitmap_row = m_Bitmap + 3;
     for (int y = 0; y < 20; y++) {
         uint16_t bit_test = 0x8000 >> 3; // starting from index 3 in 111xxxxxxxxxx111
@@ -107,7 +107,7 @@ void Board::Draw(int32_t level, RenderGroup *render_group) {
                 V2 dim = {0.8f, 0.8f};
                 uint8_t tetromino_id = m_TetrominoIdMap[y*10+x];
                 V3 color = Tetromino::GetColor(tetromino_id, level);
-                render_group->PushRectangle(pos, dim, color);
+                render_group.PushRectangle(pos, dim, color);
             }
             bit_test >>= 1;
         }

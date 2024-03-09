@@ -1,11 +1,10 @@
 #pragma once
 
-#include <util/MemArena.hpp>
 #include <renderer/Renderer.hpp>
 
 class GlIndexBuffer {
 public:
-    void Init(MemArena *arena);
+    void Init();
     void Reset();
 
 public:
@@ -17,9 +16,7 @@ public:
 
 private:
     uint32_t m_Id;
-    int32_t m_Count;
-    int32_t m_MaxCount;
     uint32_t m_CurrentIndex;
-    uint32_t *m_Indices;
+    std::vector<uint32_t> m_Indices;
 };
 

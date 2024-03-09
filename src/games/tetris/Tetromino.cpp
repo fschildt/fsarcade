@@ -94,7 +94,7 @@ bool Tetromino::CollidesWithBoard(uint16_t *board_bitmap, int32_t id, int32_t or
     return !shares_bits;
 }
 
-void Tetromino::Draw(int32_t level, RenderGroup *render_group) {
+void Tetromino::Draw(int32_t level, RenderGroup& render_group) {
     uint16_t left_aligned_bitmap[4];
     left_aligned_bitmap[0] = s_left_aligned_bitmaps[m_Id][m_Orientation][0];
     left_aligned_bitmap[1] = s_left_aligned_bitmaps[m_Id][m_Orientation][1];
@@ -108,7 +108,7 @@ void Tetromino::Draw(int32_t level, RenderGroup *render_group) {
                 V3 pos = V3(x0 + x + 0.1f, y0 + y + 0.1f, 2);
                 V2 dim = V2(0.8, 0.8);
                 V3 color = GetColor(m_Id, level);
-                render_group->PushRectangle(pos, dim, color);
+                render_group.PushRectangle(pos, dim, color);
             }
         }
     }

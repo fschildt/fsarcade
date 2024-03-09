@@ -1,6 +1,6 @@
 #pragma once
 
-#include <defs.hpp>
+#include <basic/defs.hpp>
 
 class Stack;
 class RenderGroup;
@@ -31,10 +31,10 @@ public:
         NO_GAME,
         TETRIS,
     };
-    static Game *Select(GameType type, uint8_t *memory, size_t memory_size);
+    static Game *Select(GameType type);
 
 public:
-    virtual void Init(uint8_t *memory, size_t memory_size) = 0;
-    virtual void Update(GameInput *input, RenderGroup *render_group) = 0;
+    virtual void Init() = 0;
+    virtual void Update(GameInput& input, RenderGroup& render_group) = 0;
 };
 

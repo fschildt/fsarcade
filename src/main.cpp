@@ -1,19 +1,17 @@
-#include <defs.hpp>
-#include <util/MemArena.hpp>
+#include <basic/defs.hpp>
 #include <renderer/RenderGroup.hpp>
 #include <renderer/Renderer.hpp>
 #include <games/Game.hpp>
 
-#include <new>
+#include <SDL2/SDL.h>
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_video.h>
+#include <GL/gl.h>
+#include <stdlib.h>
+#include <time.h>
 #include <stdio.h>
 #include <assert.h>
-#include <stdlib.h>
-#include <SDL2/SDL.h>
-#include <GL/gl.h>
-#include <time.h>
 
 void GameInput::Gather(SDL_Window *window) {
     this->quit = false;
@@ -57,55 +55,39 @@ void GameInput::Gather(SDL_Window *window) {
 int main(int argc, char **argv)
 {
     srand(time(0));
-    SDL_Window *sdl_window = SDL_CreateWindow("fsarcade",
+    SDL_Window *window = SDL_CreateWindow("fsarcade",
                                           SDL_WINDOWPOS_CENTERED,
                                           SDL_WINDOWPOS_CENTERED,
                                           400, 800,
                                           SDL_WINDOW_OPENGL);
-    if (!sdl_window) {
+    if (!window) {
         return 0;
     }
 
-    SDL_GLContext sdl_gl_context = SDL_GL_CreateContext(sdl_window);
+    SDL_GLContext sdl_gl_context = SDL_GL_CreateContext(window);
     if (!sdl_gl_context) {
         return 0;
     }
 
-
-    // Todo: just use new/delete
-
-    size_t memory_size = MEBIBYTES(6);
-    uint8_t *memory = (uint8_t*)malloc(memory_size);
-    MemArena arena(memory, memory_size);
-
-    size_t render_group_memory_size = MEBIBYTES(2);
-    uint8_t *render_group_memory = (uint8_t*)arena.Push(render_group_memory_size);
-    RenderGroup *render_group = new (render_group_memory) RenderGroup(render_group_memory + sizeof(RenderGroup), render_group_memory_size - sizeof(RenderGroup));
-
-    size_t renderer_memory_size = MEBIBYTES(2);
-    uint8_t *renderer_memory = (uint8_t*)arena.Push(renderer_memory_size);
-    Renderer *renderer = Renderer::Select(Renderer::API_OPENGL, sdl_window, renderer_memory, renderer_memory_size);
-
-    size_t game_memory_size = MEBIBYTES(2);
-    uint8_t *game_memory = (uint8_t*)arena.Push(game_memory_size);
-    Game *game = Game::Select(Game::TETRIS, game_memory, game_memory_size);
-
+    Renderer *renderer = Renderer::Select(Renderer::API_OPENGL, window);
+    RenderGroup render_group;
+    Game *game = Game::Select(Game::TETRIS);
 
     for (;;) {
         GameInput game_input = {};
-        game_input.Gather(sdl_window);
+        game_input.Gather(window);
 
         if (game_input.quit) {
             break;
         }
 
-        game->Update(&game_input, render_group);
+        game->Update(game_input, render_group);
 
         int w, h;
-        SDL_GetWindowSize(sdl_window, &w, &h);
+        SDL_GetWindowSize(window, &w, &h);
         renderer->Draw(render_group, w, h);
         renderer->Present();
-        render_group->Reset();
+        render_group.Reset();
     }
 }
 

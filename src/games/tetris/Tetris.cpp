@@ -1,6 +1,4 @@
 #include <games/tetris/Tetris.hpp>
-#include <util/MemArena.hpp>
-#include <renderer/Renderer.hpp>
 
 #include <stdio.h>
 
@@ -8,7 +6,7 @@
 // - row clears: first level up, then calculate score
 // - softdrop bonus only when a tetromino is placed with it.
 
-void Tetris::Init(uint8_t *memory, size_t memory_size) {
+void Tetris::Init() {
     m_Level = 0;
     m_DtRemained = 0;
 
@@ -19,16 +17,16 @@ void Tetris::Init(uint8_t *memory, size_t memory_size) {
     m_NextTetromino.Init();
 }
 
-void Tetris::Update(GameInput *input, RenderGroup *render_group) {
+void Tetris::Update(GameInput& input, RenderGroup& render_group) {
     V3 clear_color = V3(0.f, 0.f, 0.f);
-    render_group->SetSize(10, 20);
-    render_group->PushClear(clear_color);
+    render_group.SetSize(10, 20);
+    render_group.PushClear(clear_color);
 
     int32_t drotation = 0;
     int32_t dx = 0;
     int32_t dy = 0;
 
-    GameController *controller = &input->controller;
+    GameController *controller = &input.controller;
     if (controller->ActionA) {
         drotation = 1;
     }
@@ -44,7 +42,7 @@ void Tetris::Update(GameInput *input, RenderGroup *render_group) {
     if (controller->MoveDown) {
         dy = -1;
     }
-    dy -= GetHarddropCount(input->dt);
+    dy -= GetHarddropCount(input.dt);
 
 
     BoardUpdateResult board_update_result = m_Board.Update(drotation, dx, dy);

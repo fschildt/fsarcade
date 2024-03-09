@@ -1,4 +1,4 @@
-#include <math/math.hpp>
+#include <basic/math.hpp>
 
 V2::V2(float x, float y) {
     this->x = x;

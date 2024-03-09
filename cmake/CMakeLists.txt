@@ -13,8 +13,7 @@ project(fsarcade)
 add_executable(fsarcade)
 target_sources(fsarcade PUBLIC
     ${FSARCADE_SRC_DIR}/main.cpp
-    ${FSARCADE_SRC_DIR}/util/MemArena.cpp
-    ${FSARCADE_SRC_DIR}/math/math.cpp
+    ${FSARCADE_SRC_DIR}/basic/math.cpp
     ${FSARCADE_SRC_DIR}/renderer/Renderer.cpp
     ${FSARCADE_SRC_DIR}/renderer/RenderGroup.cpp
     ${FSARCADE_SRC_DIR}/renderer/gl_renderer/GlRenderer.cpp
@@ -25,10 +24,8 @@ target_sources(fsarcade PUBLIC
     ${FSARCADE_SRC_DIR}/games/tetris/Tetris.cpp
     ${FSARCADE_SRC_DIR}/games/tetris/Tetromino.cpp
     ${FSARCADE_SRC_DIR}/games/tetris/Board.cpp
-    )
-
+)
 target_include_directories(fsarcade PUBLIC
     ${FSARCADE_SRC_DIR}
-    )
-
+)
 target_link_libraries(fsarcade GL GLEW SDL2)
