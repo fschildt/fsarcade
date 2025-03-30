@@ -1,15 +1,16 @@
-#include "basic/defs.hpp"
-#include "renderer/RenderGroup.hpp"
+#include <basic/defs.hpp>
+#include <renderer/RenderGroup.hpp>
 #include <renderer/gl_renderer/GlRenderer.hpp>
 #include <basic/math.hpp>
 #include <renderer/Renderer.hpp>
 #include <renderer/gl_renderer/GlVertexBuffer.hpp>
 
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_video.h>
 #include <GL/glew.h>
 #include <GL/gl.h>
-#include <SDL2/SDL_video.h>
 #include <assert.h>
+#include <cstdio>
 
 void GLAPIENTRY
 MessageCallback(GLenum source,
@@ -26,13 +27,13 @@ MessageCallback(GLenum source,
 }
 
 GlRenderer::~GlRenderer() {
-    SDL_GL_DeleteContext(m_Context);
+    SDL_GL_DestroyContext(m_Context);
 }
 
 bool GlRenderer::Init(SDL_Window *sdl_window) {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-    void *sdl_gl_context = SDL_GL_CreateContext(sdl_window);
+    SDL_GLContext sdl_gl_context = SDL_GL_CreateContext(sdl_window);
     if (!sdl_gl_context) {
         return false;
     }
@@ -41,7 +42,7 @@ bool GlRenderer::Init(SDL_Window *sdl_window) {
     if (GLEW_OK != err)
     {
         fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
-        SDL_GL_DeleteContext(sdl_gl_context);
+        SDL_GL_DestroyContext(sdl_gl_context);
         return false;
     }
 

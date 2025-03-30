@@ -28,4 +28,4 @@ target_sources(fsarcade PUBLIC
 target_include_directories(fsarcade PUBLIC
     ${FSARCADE_SRC_DIR}
 )
-target_link_libraries(fsarcade GL GLEW SDL2)
+target_link_libraries(fsarcade GL GLEW SDL3)

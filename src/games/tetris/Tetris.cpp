@@ -1,11 +1,11 @@
-#include <SDL2/SDL_events.h>
-#include <SDL2/SDL_timer.h>
+#include <SDL3/SDL_events.h>
+#include <SDL3/SDL_timer.h>
 #include <games/tetris/Tetris.hpp>
 
 void Tetris::Init() {
     m_Level = 0;
     m_DtRemaining = 0;
-    m_TLast = SDL_GetTicks64();
+    m_TLast = SDL_GetTicks();
 
     m_Board.Init();
     m_ActiveTetromino.Init();
@@ -13,7 +13,7 @@ void Tetris::Init() {
 }
 
 bool Tetris::Update(SDL_Window *window, RenderGroup& render_group) {
-    uint64_t tnow = SDL_GetTicks64(); // number of milliseconds since SDL2 was initialized
+    uint64_t tnow = SDL_GetTicks(); // number of milliseconds since SDL3 was initialized
     float dt = (tnow - m_TLast) / 1000.f;
     m_TLast = tnow;
 
@@ -37,16 +37,13 @@ bool Tetris::Update(SDL_Window *window, RenderGroup& render_group) {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
-        case SDL_QUIT: {
-            return false;
+        case SDL_EVENT_QUIT:
+        case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+        case SDL_EVENT_WINDOW_DESTROYED: {
+             return false;
         }
-        case SDL_WINDOWEVENT: {
-            if (event.window.event == SDL_WINDOWEVENT_CLOSE) {
-                return false;
-            }
-        }
-        case SDL_KEYDOWN: {
-            auto key = event.key.keysym.sym;
+        case SDL_EVENT_KEY_DOWN: {
+            auto key = event.key.key;
             if (key == SDLK_RIGHT) {
                 m_ActiveTetromino.MoveHorizontally(1, board_bitmap);
             } else if (key == SDLK_LEFT) {
@@ -56,9 +53,9 @@ bool Tetris::Update(SDL_Window *window, RenderGroup& render_group) {
                 if (!moved_down) {
                     HandleTetrominoPlacement();
                 }
-            } else if (key == SDLK_x) {
+            } else if (key == SDLK_X) {
                 m_ActiveTetromino.Rotate(1, board_bitmap);
-            } else if (key == SDLK_z) {
+            } else if (key == SDLK_Z) {
                 m_ActiveTetromino.Rotate(3, board_bitmap);
             }
         }

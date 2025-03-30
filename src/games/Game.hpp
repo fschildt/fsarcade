@@ -1,7 +1,7 @@
 #pragma once
 
 #include <basic/defs.hpp>
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 
 class RenderGroup;
 struct SDL_Window;

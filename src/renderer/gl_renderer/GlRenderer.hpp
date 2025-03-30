@@ -18,7 +18,7 @@ private:
 
 private:
     SDL_Window *m_Window;
-    void *m_Context = 0;
+    SDL_GLContext m_Context;
 
     GlVertexBuffer m_RectangleVertexBuffer;
     GlIndexBuffer m_RectangleIndexBuffer;

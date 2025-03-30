@@ -2,8 +2,8 @@
 
 #include <basic/math.hpp>
 #include <renderer/RenderGroup.hpp>
-
-struct SDL_Window;
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_video.h>
 
 class Renderer {
 public:

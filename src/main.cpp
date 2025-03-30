@@ -3,24 +3,20 @@
 #include <renderer/Renderer.hpp>
 #include <games/Game.hpp>
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_events.h>
-#include <SDL2/SDL_render.h>
-#include <SDL2/SDL_video.h>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_video.h>
+
 #include <GL/gl.h>
 #include <stdlib.h>
 #include <time.h>
 #include <assert.h>
 
 
-int main(int argc, char **argv)
+int
+main(int argc, char **argv)
 {
     srand(time(0));
-    SDL_Window *window = SDL_CreateWindow("fsarcade",
-                                          SDL_WINDOWPOS_CENTERED,
-                                          SDL_WINDOWPOS_CENTERED,
-                                          400, 800,
-                                          SDL_WINDOW_OPENGL);
+    SDL_Window *window = SDL_CreateWindow("fsarcade", 400, 800, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     if (!window) {
         return 0;
     }
