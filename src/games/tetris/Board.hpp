@@ -3,9 +3,11 @@
 #include <basic/defs.hpp>
 #include <renderer/RenderGroup.hpp>
 #include <games/tetris/Tetromino.hpp>
+#include <array>
 
 class Board {
 public:
+    Board() = default;
     void Init();
     void PlaceTetromino(Tetromino tetromino);
     int32_t ClearRows(int32_t y0);
@@ -13,6 +15,6 @@ public:
 
 public:
     uint16_t m_Bitmap[23];
-    uint8_t m_Idmap[200];
+    uint8_t m_Idmap[10][20];
 };
 

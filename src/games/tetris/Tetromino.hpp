@@ -12,13 +12,15 @@ enum TetrominoId {
     TETROMINO_L,
     TETROMINO_J,
     TETROMINO_I,
-    TETROMINO_ID_COUNT
+    TETROMINO_ID_COUNT,
+    TETROMINO_ID_NONE,
 };
 
 class Tetromino {
 public:
-    void Init();
+    static void InitRng();
 
+    Tetromino();
     void MoveHorizontally(int32_t direction, uint16_t *board_bitmap);
     void Rotate(int32_t rotation, uint16_t *board_bitmap); // 1 = right; 3 = left
     bool MoveDown(uint16_t *board_bitmap);

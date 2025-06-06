@@ -2,18 +2,20 @@
 #include <SDL3/SDL_timer.h>
 #include <games/tetris/Tetris.hpp>
 
+Tetris::Tetris() {
+}
+
 void Tetris::Init() {
     m_Level = 0;
     m_DtRemaining = 0;
     m_TLast = SDL_GetTicks();
 
+    Tetromino::InitRng();
     m_Board.Init();
-    m_ActiveTetromino.Init();
-    m_NextTetromino.Init();
 }
 
-bool Tetris::Update(SDL_Window *window, RenderGroup& render_group) {
-    uint64_t tnow = SDL_GetTicks(); // number of milliseconds since SDL3 was initialized
+bool Tetris::Update(SDL_Window *window, RenderGroup &render_group) {
+    uint64_t tnow = SDL_GetTicks();
     float dt = (tnow - m_TLast) / 1000.f;
     m_TLast = tnow;
 
@@ -71,8 +73,9 @@ bool Tetris::Update(SDL_Window *window, RenderGroup& render_group) {
 void Tetris::HandleTetrominoPlacement() {
     m_Board.PlaceTetromino(m_ActiveTetromino);
     int32_t rows_cleared = m_Board.ClearRows(m_ActiveTetromino.m_Y);
+
     m_ActiveTetromino = m_NextTetromino;
-    m_NextTetromino.Init();
+    m_NextTetromino = Tetromino();
 }
 
 int32_t Tetris::GetDropCount(float dt) {

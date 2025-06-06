@@ -1,5 +1,6 @@
 #include <games/tetris/Tetromino.hpp>
 #include <stdlib.h>
+#include <random>
 
 // layout of a left_aligned_bitmap: xxxx000000000000
 // layout of a board_bitmap is 111xxxxxxxxxx111
@@ -7,7 +8,7 @@ static const uint16_t s_left_aligned_bitmaps[7][4][4] = {
     {
         // O piece
         {0x0000, 0x6000, 0x6000, 0x0000}, // orientation 0
-        {0x0000, 0x6000, 0x6000, 0x0000}, // orientation 0
+        {0x0000, 0x6000, 0x6000, 0x0000}, // orientation 1
         {0x0000, 0x6000, 0x6000, 0x0000}, // orientation 2
         {0x0000, 0x6000, 0x6000, 0x0000}, // orientation 3
     },
@@ -55,13 +56,21 @@ static const uint16_t s_left_aligned_bitmaps[7][4][4] = {
     }
 };
 
+static std::mt19937 s_rng;
+static std::uniform_int_distribution<int32_t> s_dist(0, TETROMINO_ID_COUNT-1);
 
 
-void Tetromino::Init() {
-    m_Id = rand() % TETROMINO_ID_COUNT;
-    m_Orientation = 0;
-    m_X = 7;
-    m_Y = 19;
+void Tetromino::InitRng() {
+    s_rng = std::mt19937((std::random_device()()));
+}
+
+
+Tetromino::Tetromino() :
+        m_Id(s_dist(s_rng)),
+        m_Orientation(0),
+        m_X(7),
+        m_Y(19)
+{
 }
 
 void Tetromino::MoveHorizontally(int32_t direction, uint16_t *board_bitmap) {
@@ -88,18 +97,14 @@ bool Tetromino::MoveDown(uint16_t *board_bitmap) {
 }
 
 bool Tetromino::CollidesWithBoard(uint16_t *board_bitmap, int32_t id, int32_t orientation, int32_t x, int32_t y) {
-    // Todo: fix unaligned uint64_t access; just test 4 times uint16_t, maybe even with SIMD
-    uint64_t collision_testee = *(uint64_t*)(&s_left_aligned_bitmaps[id][orientation][0]) >> x;
-    bool shares_bits = collision_testee & *(uint64_t*)(&board_bitmap[y]);
-    return shares_bits;
+    uint64_t tetromino_bits = *(uint64_t*)(&s_left_aligned_bitmaps[id][orientation][0]) >> x;
+    uint64_t board_bits = *(uint64_t*)(&board_bitmap[y]);
+    bool is_collision = tetromino_bits & board_bits;
+    return is_collision;
 }
 
 void Tetromino::Draw(int32_t level, RenderGroup& render_group) {
-    uint16_t left_aligned_bitmap[4];
-    left_aligned_bitmap[0] = s_left_aligned_bitmaps[m_Id][m_Orientation][0];
-    left_aligned_bitmap[1] = s_left_aligned_bitmaps[m_Id][m_Orientation][1];
-    left_aligned_bitmap[2] = s_left_aligned_bitmaps[m_Id][m_Orientation][2];
-    left_aligned_bitmap[3] = s_left_aligned_bitmaps[m_Id][m_Orientation][3];
+    const uint16_t *left_aligned_bitmap = s_left_aligned_bitmaps[m_Id][m_Orientation];
     int8_t x0 = m_X - 3;
     int8_t y0 = m_Y - 3;
     for (int y = 0; y < 4; y++) {

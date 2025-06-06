@@ -7,9 +7,10 @@
 
 class GlRenderer : public Renderer {
 public:
-    bool Init(SDL_Window *window) override;
+    GlRenderer(SDL_Window *window);
     ~GlRenderer() override;
 
+    bool Init() override;
     void Draw(RenderGroup& render_group, int width, int height) override;
     void Present() override;
 

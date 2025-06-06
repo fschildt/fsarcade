@@ -4,6 +4,7 @@
 
 class GlShader {
 public:
+    GlShader() = default;
     bool InitProgram();
     void UseProgram();
 private:

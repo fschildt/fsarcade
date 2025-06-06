@@ -4,6 +4,7 @@
 
 class GlIndexBuffer {
 public:
+    GlIndexBuffer() = default;
     void Init();
     void Reset();
 

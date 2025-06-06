@@ -9,6 +9,7 @@ struct GlVertex {
 
 class GlVertexBuffer {
 public:
+    GlVertexBuffer() = default;
     void Init();
     void Reset();
 

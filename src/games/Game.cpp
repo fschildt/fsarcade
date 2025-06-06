@@ -1,21 +1,25 @@
+#include "basic/defs.hpp"
 #include <games/Game.hpp>
 #include <games/tetris/Tetris.hpp>
 
 #include <assert.h>
+#include <memory>
 
-Game* Game::Select(GameType type)
+
+std::unique_ptr<Game>
+Game::Select(GameType type)
 {
-    Game *game = 0;
-
     switch (type) {
         case TETRIS: {
-            game = new Tetris();
-            game->Init();
+            return std::make_unique<Tetris>();
         } break;
 
-        default: assert(0);
+        InvalidDefaultCase;
     }
 
-    return game;
+    return 0;
 }
+
+
+Game::~Game() {}
 

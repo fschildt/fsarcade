@@ -1,24 +1,18 @@
 #include <renderer/Renderer.hpp>
 #include <renderer/gl_renderer/GlRenderer.hpp>
 
-#include <new>
 
-static Renderer *s_SelectedRenderer;
-
-Renderer::~Renderer() {
-}
-
-Renderer *Renderer::Select(Api api, SDL_Window *window) {
+std::unique_ptr<Renderer>
+Renderer::Select(Api api, SDL_Window *window) {
     switch (api) {
         case API_OPENGL: {
-            Renderer *renderer = new GlRenderer();
-            if (!renderer->Init(window)) {
-                return 0;
-            }
-            return renderer;
+            return std::make_unique<GlRenderer>(window);
         }
         InvalidDefaultCase;
     }
-    return 0;
+
+    return nullptr;
 }
 
+
+Renderer::~Renderer() {}

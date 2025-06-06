@@ -30,10 +30,14 @@ GlRenderer::~GlRenderer() {
     SDL_GL_DestroyContext(m_Context);
 }
 
-bool GlRenderer::Init(SDL_Window *sdl_window) {
+GlRenderer::GlRenderer(SDL_Window *window)
+        : m_Window(window), m_Context(nullptr) {
+}
+
+bool GlRenderer::Init() {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-    SDL_GLContext sdl_gl_context = SDL_GL_CreateContext(sdl_window);
+    SDL_GLContext sdl_gl_context = SDL_GL_CreateContext(m_Window);
     if (!sdl_gl_context) {
         return false;
     }
@@ -71,7 +75,6 @@ bool GlRenderer::Init(SDL_Window *sdl_window) {
     m_TextIndexBuffer.Init();
 
 
-    m_Window = sdl_window;
     m_Context = sdl_gl_context;
     return true;
 }
