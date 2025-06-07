@@ -3,12 +3,11 @@
 #include <basic/defs.hpp>
 #include <renderer/RenderGroup.hpp>
 #include <games/tetris/Tetromino.hpp>
-#include <array>
 
 class Board {
 public:
-    Board() = default;
-    void Init();
+    Board();
+
     void PlaceTetromino(Tetromino tetromino);
     int32_t ClearRows(int32_t y0);
     void Draw(int32_t level, RenderGroup& render_group);

@@ -5,6 +5,7 @@ set(CMAKE_CXX_COMPILER clang++)
 # set binary directory
 set(FSARCADE_ROOT_DIR    "${CMAKE_CURRENT_LIST_DIR}/..")
 set(FSARCADE_SRC_DIR     "${FSARCADE_ROOT_DIR}/src")
+set(IMGUI_SRC_DIR        "${FSARCADE_ROOT_DIR}/external/imgui")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/..)
 
 
@@ -24,8 +25,16 @@ target_sources(fsarcade PUBLIC
     ${FSARCADE_SRC_DIR}/games/tetris/Tetris.cpp
     ${FSARCADE_SRC_DIR}/games/tetris/Tetromino.cpp
     ${FSARCADE_SRC_DIR}/games/tetris/Board.cpp
+    ${IMGUI_SRC_DIR}/imgui.cpp
+    ${IMGUI_SRC_DIR}/imgui_draw.cpp
+    ${IMGUI_SRC_DIR}/imgui_tables.cpp
+    ${IMGUI_SRC_DIR}/imgui_widgets.cpp
+    ${IMGUI_SRC_DIR}/backends/imgui_impl_sdl3.cpp
+    ${IMGUI_SRC_DIR}/backends/imgui_impl_opengl3.cpp
 )
 target_include_directories(fsarcade PUBLIC
     ${FSARCADE_SRC_DIR}
+    ${IMGUI_SRC_DIR}
+    ${IMGUI_SRC_DIR}/backends
 )
-target_link_libraries(fsarcade GL GLEW SDL3)
+target_link_libraries(fsarcade GL GLEW SDL3 dl)

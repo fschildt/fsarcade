@@ -2,7 +2,7 @@
 #include <games/tetris/Tetromino.hpp>
 #include <games/tetris/Board.hpp>
 
-void Board::Init() {
+Board::Board() {
     for (int y = 0; y < 3; y++) {
         m_Bitmap[y] = 0xffff; // 1111111111111111
     }
