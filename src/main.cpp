@@ -110,8 +110,7 @@ main(int argc, char **argv)
         SDL_Event event;
         while (cur_game_events < max_game_events && SDL_PollEvent(&event)) {
             if (io.WantCaptureKeyboard) {
-                if (event.type == SDL_EVENT_KEY_DOWN &&
-                    event.key.key == SDLK_ESCAPE)
+                if (event.type == SDL_EVENT_KEY_DOWN)
                 {
                     game_events.emplace_back(event);
                     cur_game_events++;
