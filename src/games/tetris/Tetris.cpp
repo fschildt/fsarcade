@@ -67,6 +67,9 @@ void Tetris::UpdateRunning(SDL_Event &event, float dt) {
             if (!moved_down) {
                 HandleTetrominoPlacement();
             }
+            else {
+                m_SoftdropCounter++;
+            }
         } else if (key == SDLK_X) {
             m_ActiveTetromino.Rotate(1, board_bitmap);
         } else if (key == SDLK_Z) {
@@ -101,7 +104,6 @@ void Tetris::HandleTetrominoPlacement() {
     m_LineCounter += rows_cleared;
     m_TetrominoCounters[m_ActiveTetromino.m_Id] += 1;
 
-    // Todo: soft drop score
     if (rows_cleared == 1) {
         m_Score += 40 * (m_Level + 1);
     }
@@ -114,6 +116,9 @@ void Tetris::HandleTetrominoPlacement() {
     else if (rows_cleared == 4) {
         m_Score += 1200 * (m_Level + 1);
     }
+
+    m_Score += m_SoftdropCounter;
+    m_SoftdropCounter = 0;
 
     m_Level = m_StartingLevel + m_LineCounter / 10;
 }

@@ -36,6 +36,8 @@ private:
     uint32_t m_LineCounter = 0;
     uint32_t m_StartingLevel = 0;
     uint32_t m_Level = 0;
+
+    uint32_t m_SoftdropCounter = 0;
 };
 
 
