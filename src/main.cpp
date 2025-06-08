@@ -1,3 +1,4 @@
+#include "imgui_internal.h"
 #include <basic/defs.hpp>
 #include <cstdlib>
 #include <memory>
@@ -17,6 +18,26 @@
 #include <assert.h>
 #include <iostream>
 #include <array>
+
+
+Game::GameType
+do_menu()
+{
+    Game::GameType type = Game::NO_GAME;
+
+    ImGuiIO& io = ImGui::GetIO();
+    //ImGuiWindowFlags flags = ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+    ImGuiWindowFlags flags = 0;
+
+    ImGui::Begin("Game Selection", nullptr, flags);
+    if (ImGui::Button("Tetris")) {
+        type = Game::TETRIS;
+    }
+    ImGui::End();
+
+    return type;
+}
+
 
 int
 main(int argc, char **argv)
@@ -50,28 +71,23 @@ main(int argc, char **argv)
     }
 
     SDL_GL_MakeCurrent(window, sdl_gl_context);
-    SDL_GL_SetSwapInterval(1); // Enable vsync
+    SDL_GL_SetSwapInterval(1); // enable vsync
     SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
     SDL_ShowWindow(window);
 
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 
-    // Setup Dear ImGui style
     ImGui::StyleColorsDark();
-
-    // Setup Platform/Renderer backends
     ImGui_ImplSDL3_InitForOpenGL(window, sdl_gl_context);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
 
-    std::unique_ptr<Game> game = Game::Select(Game::TETRIS);
-    game->Init();
-
+    std::unique_ptr<Game> game = nullptr;
     std::unique_ptr<Renderer> renderer = Renderer::Select(Renderer::API_OPENGL, window);
     if (!renderer->Init()) {
         return EXIT_FAILURE;
@@ -83,7 +99,6 @@ main(int argc, char **argv)
     std::vector<SDL_Event> game_events;
     game_events.reserve(32);
     for (;;) {
-        // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL3_NewFrame();
         ImGui::NewFrame();
@@ -94,31 +109,58 @@ main(int argc, char **argv)
 
         SDL_Event event;
         while (cur_game_events < max_game_events && SDL_PollEvent(&event)) {
-            if (io.WantCaptureKeyboard || io.WantCaptureMouse) {
-                ImGui_ImplSDL3_ProcessEvent(&event);
+            if (io.WantCaptureKeyboard) {
+                if (event.type == SDL_EVENT_KEY_DOWN &&
+                    event.key.key == SDLK_ESCAPE)
+                {
+                    game_events.emplace_back(event);
+                    cur_game_events++;
+                }
             }
+            else if (io.WantCaptureMouse) {
+            }
+            else {
+                game_events.emplace_back(event);
+                cur_game_events++;
+            }
+            ImGui_ImplSDL3_ProcessEvent(&event);
+
             if (event.type == SDL_EVENT_QUIT)
                 goto QUIT;
             if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && event.window.windowID == SDL_GetWindowID(window))
                 goto QUIT;
-            // Todo: can i still get the window id?
             if (event.type == SDL_EVENT_WINDOW_DESTROYED && event.window.windowID == SDL_GetWindowID(window)) {
                 goto QUIT;
             }
-
-            game_events.emplace_back(event);
         }
 
-        if (!game->Update(game_events, render_group)) {
-            goto QUIT;
+        if (game) {
+            bool keep_game_running = game->Update(game_events, render_group);
+            if (!keep_game_running) {
+                game.reset();
+            }
+            game_events.clear();
         }
-        game_events.clear();
+        else {
+            Game::GameType type = do_menu();
+            if (type != Game::NO_GAME) {
+                game = Game::Select(type);
+                game->Init();
+            }
+        }
 
 
+        ImGuiIO& io = ImGui::GetIO();
+        ImGuiWindowFlags flags = ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 
-        // Rendering
+        ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x - 200, 0));
+        ImGui::Begin("Performance", nullptr, flags);
+        ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+        ImGui::End();
+
+
         ImGui::Render();
-        ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+        ImVec4 clear_color = ImVec4(0.f, 0.f, 0.f, 1.00f);
         glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
         glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -133,7 +175,13 @@ main(int argc, char **argv)
     }
 
 QUIT:
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplSDL3_Shutdown();
+    ImGui::DestroyContext();
 
+    SDL_GL_DestroyContext(sdl_gl_context);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
     return 0;
 }
 

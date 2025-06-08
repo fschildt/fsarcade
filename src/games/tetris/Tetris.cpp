@@ -16,54 +16,79 @@ void Tetris::Init() {
 }
 
 bool Tetris::Update(std::vector<SDL_Event> &events, RenderGroup &render_group) {
+    V3 clear_color = V3(0.f, 0.f, 0.f);
+    render_group.SetSize(10, 20);
+    render_group.PushClear(clear_color);
+
     uint64_t tnow = SDL_GetTicks();
     float dt = (tnow - m_TLast) / 1000.f;
     m_TLast = tnow;
 
 
-    V3 clear_color = V3(0.f, 0.f, 0.f);
-    render_group.SetSize(10, 20);
-    render_group.PushClear(clear_color);
-
-
-    uint32_t drop_count = GetDropCount(dt);
-    while (drop_count) {
-        bool moved_down = m_ActiveTetromino.MoveDown(m_Board.m_Bitmap);
-        if (!moved_down) {
-            HandleTetrominoPlacement();
+    if (!m_Paused) {
+        uint32_t drop_count = GetDropCount(dt);
+        while (drop_count) {
+            bool moved_down = m_ActiveTetromino.MoveDown(m_Board.m_Bitmap);
+            if (!moved_down) {
+                HandleTetrominoPlacement();
+            }
+            drop_count--;
         }
-        drop_count--;
     }
 
 
-    uint16_t *board_bitmap = m_Board.m_Bitmap;
-    for (SDL_Event &event : events) {
-        switch (event.type) {
-        case SDL_EVENT_KEY_DOWN: {
-            auto key = event.key.key;
-            if (key == SDLK_RIGHT) {
-                m_ActiveTetromino.MoveHorizontally(1, board_bitmap);
-            } else if (key == SDLK_LEFT) {
-                m_ActiveTetromino.MoveHorizontally(-1, board_bitmap);
-            } else if (key == SDLK_DOWN) {
-                bool moved_down = m_ActiveTetromino.MoveDown(board_bitmap);
-                if (!moved_down) {
-                    HandleTetrominoPlacement();
-                }
-            } else if (key == SDLK_X) {
-                m_ActiveTetromino.Rotate(1, board_bitmap);
-            } else if (key == SDLK_Z) {
-                m_ActiveTetromino.Rotate(3, board_bitmap);
-            }
+    for (auto &event : events) {
+        if (m_Paused) {
+            UpdatePaused(event);
         }
-        default:;
+        else {
+            UpdateRunning(event, dt);
         }
     }
 
     m_Board.Draw(m_Level, render_group);
     m_ActiveTetromino.Draw(m_Level, render_group);
     DoImGui();
-    return true;
+
+    return m_Running;
+}
+
+void Tetris::UpdateRunning(SDL_Event &event, float dt) {
+    uint16_t *board_bitmap = m_Board.m_Bitmap;
+    switch (event.type) {
+    case SDL_EVENT_KEY_DOWN: {
+        auto key = event.key.key;
+        if (key == SDLK_RIGHT) {
+            m_ActiveTetromino.MoveHorizontally(1, board_bitmap);
+        } else if (key == SDLK_LEFT) {
+            m_ActiveTetromino.MoveHorizontally(-1, board_bitmap);
+        } else if (key == SDLK_DOWN) {
+            bool moved_down = m_ActiveTetromino.MoveDown(board_bitmap);
+            if (!moved_down) {
+                HandleTetrominoPlacement();
+            }
+        } else if (key == SDLK_X) {
+            m_ActiveTetromino.Rotate(1, board_bitmap);
+        } else if (key == SDLK_Z) {
+            m_ActiveTetromino.Rotate(3, board_bitmap);
+        } else if (key == SDLK_ESCAPE) {
+            m_Paused = true;
+        }
+    }
+    default:;
+    }
+}
+
+void Tetris::UpdatePaused(SDL_Event &event) {
+    switch (event.type) {
+    case SDL_EVENT_KEY_DOWN: {
+        auto key = event.key.key;
+        if (key == SDLK_ESCAPE) {
+            m_Paused = false;
+        }
+    }
+    default:;
+    }
 }
 
 void Tetris::HandleTetrominoPlacement() {
@@ -118,18 +143,9 @@ int32_t Tetris::GetDropCount(float dt) {
     return drop_count;
 }
 
-// Todo: can you change ImGui::Text() calls without formatting the strings like that?
 void Tetris::DoImGui() {
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-
-
+    ImGuiIO& io = ImGui::GetIO();
     ImGuiWindowFlags flags = ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-
-
-    ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x - 200, 0));
-    ImGui::Begin("Fps", nullptr, flags);
-    ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-    ImGui::End();
 
 
     uint32_t lines = m_LineCounter > 999999 ? 999999 : m_LineCounter;
@@ -141,13 +157,13 @@ void Tetris::DoImGui() {
         r--;
     }
     ImGui::SetNextWindowPos(ImVec2(160, 50));
-    ImGui::Begin("Lines", nullptr, flags);
+    ImGui::Begin("TetrisLines", nullptr, flags);
     ImGui::Text("%s", lines_cstr);
     ImGui::End();
 
 
     ImGui::SetNextWindowPos(ImVec2(0, 100));
-    ImGui::Begin("Statistics", nullptr, flags);
+    ImGui::Begin("TetrisStatistics", nullptr, flags);
     ImGui::Text("O Piece = %d", m_TetrominoCounters[TETROMINO_O]);
     ImGui::Text("S Piece = %d", m_TetrominoCounters[TETROMINO_S]);
     ImGui::Text("Z Piece = %d", m_TetrominoCounters[TETROMINO_Z]);
@@ -167,12 +183,12 @@ void Tetris::DoImGui() {
         r--;
     }
     ImGui::SetNextWindowPos(ImVec2(250.f, 100.f));
-    ImGui::Begin("Score", nullptr, flags);
+    ImGui::Begin("TetrisScore", nullptr, flags);
     ImGui::Text("%s", score_cstr);
     ImGui::End();
 
     ImGui::SetNextWindowPos(ImVec2(250.f, 150.f));
-    ImGui::Begin("NextTetromino", nullptr, flags);
+    ImGui::Begin("TetrisNextTetromino", nullptr, flags);
     ImGui::Text("Next: %d", m_NextTetromino.m_Id);
     ImGui::End();
 
@@ -186,8 +202,20 @@ void Tetris::DoImGui() {
         r--;
     }
     ImGui::SetNextWindowPos(ImVec2(250.f, 200.f));
-    ImGui::Begin("Level", nullptr, flags);
+    ImGui::Begin("TetrisLevel", nullptr, flags);
     ImGui::Text("%s", level_cstr);
     ImGui::End();
+
+
+    if (m_Paused) {
+        ImGui::Begin("TetrisPause");
+        if (ImGui::Button("Resume")) {
+            m_Paused = false;
+        }
+        if (ImGui::Button("Exit")) {
+            m_Running = false;
+        }
+        ImGui::End();
+    }
 }
 

@@ -10,6 +10,10 @@ std::unique_ptr<Game>
 Game::Select(GameType type)
 {
     switch (type) {
+        case NO_GAME: {
+            return nullptr;
+        }
+
         case TETRIS: {
             return std::make_unique<Tetris>();
         } break;
@@ -17,7 +21,7 @@ Game::Select(GameType type)
         InvalidDefaultCase;
     }
 
-    return 0;
+    return nullptr;
 }
 
 

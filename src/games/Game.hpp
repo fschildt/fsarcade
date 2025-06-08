@@ -11,6 +11,7 @@ struct SDL_Window;
 class Game {
 public:
     enum GameType {
+        NO_GAME,
         TETRIS,
     };
 

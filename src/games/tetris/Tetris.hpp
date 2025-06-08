@@ -14,6 +14,9 @@ public:
     void HandleTetrominoPlacement();
 
 private:
+    void UpdateRunning(SDL_Event &event, float dt);
+    void UpdatePaused(SDL_Event &event);
+
     int32_t GetDropCount(float dt);
     void DoImGui();
 
@@ -24,6 +27,9 @@ private:
     Tetromino m_ActiveTetromino;
     Tetromino m_NextTetromino;
     Board m_Board;
+
+    bool m_Paused = false;
+    bool m_Running = true;
 
     uint32_t m_TetrominoCounters[TETROMINO_ID_COUNT] = {};
     uint32_t m_Score = 0;
