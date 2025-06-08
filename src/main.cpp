@@ -138,7 +138,6 @@ main(int argc, char **argv)
             if (!keep_game_running) {
                 game.reset();
             }
-            game_events.clear();
         }
         else {
             Game::GameType type = do_menu();
@@ -147,6 +146,7 @@ main(int argc, char **argv)
                 game->Init();
             }
         }
+        game_events.clear();
 
 
         ImGuiIO& io = ImGui::GetIO();
