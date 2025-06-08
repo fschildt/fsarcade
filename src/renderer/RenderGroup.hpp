@@ -38,6 +38,7 @@ union REntity {
 };
 
 struct RSortEntry {
+    RSortEntry(float z, size_t entity_index);
     float z;
     size_t entity_index;
 };
@@ -62,6 +63,6 @@ private:
     float m_YMax;
 
     std::vector<REntity> m_REntities;
-    std::vector<std::pair<float, size_t>> m_RSortEntries;
+    std::vector<RSortEntry> m_RSortEntries;
 };
 

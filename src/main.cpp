@@ -81,7 +81,7 @@ main(int argc, char **argv)
 
 
     std::vector<SDL_Event> game_events;
-    game_events.resize(32);
+    game_events.reserve(32);
     for (;;) {
         // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
