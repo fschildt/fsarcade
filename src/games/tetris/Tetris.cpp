@@ -145,7 +145,7 @@ int32_t Tetris::GetDropCount(float dt) {
 
 void Tetris::DoImGui() {
     ImGuiIO& io = ImGui::GetIO();
-    ImGuiWindowFlags flags = ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+    ImGuiWindowFlags flags = ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoInputs;
 
 
     uint32_t lines = m_LineCounter > 999999 ? 999999 : m_LineCounter;
