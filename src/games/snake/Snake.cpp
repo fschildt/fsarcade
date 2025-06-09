@@ -71,61 +71,67 @@ void Snake::MaybeMoveSnake(float dt_in_seconds) {
     float tiles_per_second = m_TilesPerSecond;
     float seconds_per_tile = 1.0f / tiles_per_second;
     while (dt_in_seconds_to_use > seconds_per_tile + 0.00000001) {
-        V2ST position = m_BodyPositions[m_Head];
+        V2ST head_pos = m_BodyPositions[m_Head];
+        V2ST tail_pos = m_BodyPositions[m_Tail];
+
+
+        // find head_pos
         if (m_Direction == DIRECTION_UP) {
-            position.y += 1;
+            head_pos.y += 1;
         }
         else if (m_Direction == DIRECTION_DOWN) {
-            position.y -= 1;
+            head_pos.y -= 1;
         }
         else if (m_Direction == DIRECTION_RIGHT) {
-            position.x += 1;
+            head_pos.x += 1;
         }
         else if (m_Direction == DIRECTION_LEFT) {
-            position.x -= 1;
+            head_pos.x -= 1;
         }
-        if (position.y >= m_Height || position.x >= m_Width) {
+        if (head_pos.y >= m_Height || head_pos.x >= m_Width) {
             m_IsRunning = false;
             return;
         }
-        uint64_t collision_test_bit = 1 << position.x;
-        uint64_t collision_test_row = m_BodyBitmap[position.y];
-        if (m_BodyPositions[m_Tail].y == position.y) {
-            collision_test_row &= m_BodyPositions[m_Tail].x;
+        uint64_t head_bit = 1 << head_pos.x;
+        uint64_t body_bits = m_BodyBitmap[head_pos.y];
+        if (head_pos.y == tail_pos.y) {
+            body_bits &= ~(1 << tail_pos.x);
         }
-        if (collision_test_bit & collision_test_row) {
+        if (head_bit & body_bits) {
             m_IsRunning = false;
             return;
+        }
+
+
+        // add head_pos
+        size_t max_positions = sizeof(m_BodyPositions) / sizeof(m_BodyPositions[0]);
+        m_Head += 1;
+        if (m_Head >= max_positions) {
+            m_Head = 0;
+        }
+        m_BodyPositions[m_Head] = head_pos;
+        m_BodyBitmap[head_pos.y] |= (1 << head_pos.x);
+
+
+        if (m_BodyPositions[m_Head] == m_FoodPosition) {
+            PlaceFood();
         }
         else {
-            size_t max_positions = sizeof(m_BodyPositions) / sizeof(m_BodyPositions[0]);
-            m_Head += 1;
-            if (m_Head >= max_positions) {
-                m_Head = 0;
-            }
-            m_BodyPositions[m_Head] = position;
-            m_LastAdvancedDirection = m_Direction;
+            // delete tail from bitmap
+            V2ST tail_pos = m_BodyPositions[m_Tail];
+            m_BodyBitmap[tail_pos.y] &= ~(1 << tail_pos.x);
 
-
-            V2ST head_pos = m_BodyPositions[m_Head];
-            m_BodyBitmap[head_pos.y] |= (1 << head_pos.x);
-
-            if (m_BodyPositions[m_Head] == m_FoodPosition) {
-                PlaceFood();
-            }
-            else {
-                V2ST tail_pos = m_BodyPositions[m_Tail];
-                m_BodyBitmap[tail_pos.y] &= 0xffffffffffffffff & ~(1 << tail_pos.x);
-
-                m_Tail += 1;
-                if (m_Tail >= max_positions) {
-                    m_Tail = 0;
-                }
+            m_Tail += 1;
+            if (m_Tail >= max_positions) {
+                m_Tail = 0;
             }
         }
 
+        m_LastAdvancedDirection = m_Direction;
         dt_in_seconds_to_use -= seconds_per_tile;
     }
+
+
     m_DtInSecondsRemaining = dt_in_seconds_to_use;
 }
 
