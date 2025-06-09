@@ -84,9 +84,18 @@ void Snake::MaybeMoveSnake(float dt_in_seconds) {
         else if (m_Direction == DIRECTION_LEFT) {
             position.x -= 1;
         }
-
         if (position.y >= m_Height || position.x >= m_Width) {
             m_IsRunning = false;
+            return;
+        }
+        uint64_t collision_test_bit = 1 << position.x;
+        uint64_t collision_test_row = m_BodyBitmap[position.y];
+        if (m_BodyPositions[m_Tail].y == position.y) {
+            collision_test_row &= m_BodyPositions[m_Tail].x;
+        }
+        if (collision_test_bit & collision_test_row) {
+            m_IsRunning = false;
+            return;
         }
         else {
             size_t max_positions = sizeof(m_BodyPositions) / sizeof(m_BodyPositions[0]);
@@ -106,7 +115,7 @@ void Snake::MaybeMoveSnake(float dt_in_seconds) {
             }
             else {
                 V2ST tail_pos = m_BodyPositions[m_Tail];
-                m_BodyBitmap[head_pos.y] &= 0xffffffffffffffff & ~(1 << tail_pos.x);
+                m_BodyBitmap[tail_pos.y] &= 0xffffffffffffffff & ~(1 << tail_pos.x);
 
                 m_Tail += 1;
                 if (m_Tail >= max_positions) {
