@@ -21,7 +21,7 @@
 
 
 Game::GameType
-do_menu()
+do_menu(RenderGroup &render_group)
 {
     Game::GameType type = Game::NO_GAME;
 
@@ -33,7 +33,16 @@ do_menu()
     if (ImGui::Button("Tetris")) {
         type = Game::TETRIS;
     }
+    if (ImGui::Button("Snake")) {
+        type = Game::SNAKE;
+    }
     ImGui::End();
+
+
+    V3 clear_color = V3(0.4f, 0.4f, 0.4f);
+    render_group.SetSize(10.0f, 20.0f);
+    render_group.PushClear(clear_color);
+
 
     return type;
 }
@@ -140,7 +149,7 @@ main(int argc, char **argv)
             }
         }
         else {
-            Game::GameType type = do_menu();
+            Game::GameType type = do_menu(render_group);
             if (type != Game::NO_GAME) {
                 game = Game::Select(type);
                 game->Init();
@@ -159,10 +168,7 @@ main(int argc, char **argv)
 
 
         ImGui::Render();
-        ImVec4 clear_color = ImVec4(0.f, 0.f, 0.f, 1.00f);
         glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
-        glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
-        glClear(GL_COLOR_BUFFER_BIT);
 
         int w, h;
         SDL_GetWindowSize(window, &w, &h);

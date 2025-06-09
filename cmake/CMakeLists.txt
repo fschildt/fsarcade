@@ -25,6 +25,7 @@ target_sources(fsarcade PUBLIC
     ${FSARCADE_SRC_DIR}/games/tetris/Tetris.cpp
     ${FSARCADE_SRC_DIR}/games/tetris/Tetromino.cpp
     ${FSARCADE_SRC_DIR}/games/tetris/Board.cpp
+    ${FSARCADE_SRC_DIR}/games/snake/Snake.cpp
     ${IMGUI_SRC_DIR}/imgui.cpp
     ${IMGUI_SRC_DIR}/imgui_draw.cpp
     ${IMGUI_SRC_DIR}/imgui_tables.cpp

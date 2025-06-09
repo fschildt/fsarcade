@@ -4,8 +4,8 @@
 #include <SDL3/SDL.h>
 #include <memory>
 #include <vector>
+#include <renderer/RenderGroup.hpp>
 
-class RenderGroup;
 struct SDL_Window;
 
 class Game {
@@ -13,6 +13,7 @@ public:
     enum GameType {
         NO_GAME,
         TETRIS,
+        SNAKE
     };
 
     Game() = default;
