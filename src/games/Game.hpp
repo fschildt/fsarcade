@@ -20,7 +20,6 @@ public:
     virtual ~Game();
     static std::unique_ptr<Game> Select(GameType type);
 
-    virtual void Init() = 0;
     virtual bool Update(std::vector<SDL_Event> &events, RenderGroup &render_group) = 0;
 };
 

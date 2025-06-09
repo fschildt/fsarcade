@@ -11,10 +11,11 @@ Tetris::Tetris() {
     m_TetrominoCounters[m_ActiveTetromino.m_Id] += 1;
 }
 
-void Tetris::Init() {
-}
-
 bool Tetris::Update(std::vector<SDL_Event> &events, RenderGroup &render_group) {
+    if (!m_IsInitialized) {
+        m_IsInitialized = true;
+    }
+
     V3 clear_color = V3(0.f, 0.f, 0.f);
     render_group.SetSize(10, 20);
     render_group.PushClear(clear_color);

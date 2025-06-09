@@ -152,7 +152,6 @@ main(int argc, char **argv)
             Game::GameType type = do_menu(render_group);
             if (type != Game::NO_GAME) {
                 game = Game::Select(type);
-                game->Init();
             }
         }
         game_events.clear();

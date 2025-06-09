@@ -9,40 +9,36 @@ V2ST::V2ST(size_t x, size_t y) : x(x), y(y) {
 
 
 Snake::Snake ()
-    : m_LastMillisecondsSinceT0(SDL_GetTicks()),
-    m_TilesPerSecond(4.0f),
-    m_IsPaused(false),
-    m_IsRunning(true),
-    m_BodyPositions{},
-    m_Rng(std::mt19937((std::random_device()()))) {
+    : m_Rng(std::mt19937((std::random_device()()))) {
 }
 
 void Snake::Init() {
-    m_Width = 10;
-    m_Height = 20;
-    m_Head = 1;
-    m_Tail = 0;
-    m_Direction = DIRECTION_RIGHT;
-    m_LastAdvancedDirection = DIRECTION_RIGHT;
-
-    size_t x = m_Width / 2 - 1;
-    size_t y = m_Height / 2;
-    m_BodyPositions[0] = V2ST(m_Width / 2 - 1, m_Height / 2);
-    m_BodyPositions[1] = V2ST(m_Width / 2, m_Height / 2);
-    memset(m_BodyBitmap, 0, sizeof(m_BodyBitmap));
-    m_BodyBitmap[y] = 3 << (m_Width - 2 - x);
+    size_t head_x = m_Width / 2;
+    size_t head_y = m_Height / 2;
+    m_BodyPositions[0] = V2ST(head_x -1, head_y);
+    m_BodyPositions[1] = V2ST(head_x, head_y);
+    m_BodyBitmap[head_y] = 3 << (m_Width - 1 - head_x);
 
     PlaceFood();
+    m_LastMillisecondsSinceT0 = SDL_GetTicks();
+
+    m_IsInitialized = true;
 }
 
 bool Snake::Update(std::vector<SDL_Event> &events, RenderGroup &render_group) {
-    V3 clear_color = V3(0.0f, 0.0f, 0.0f);
-    render_group.SetSize(10.0f, 20.0f);
-    render_group.PushClear(clear_color);
+    if (!m_IsInitialized) {
+        Init();
+    }
 
     uint64_t milliseconds_since_t0 = SDL_GetTicks();
     float dt_in_seconds = (milliseconds_since_t0 - m_LastMillisecondsSinceT0) / 1000.0f;
     m_LastMillisecondsSinceT0 = milliseconds_since_t0;
+
+
+    V3 clear_color = V3(0.0f, 0.0f, 0.0f);
+    render_group.SetSize(10.0f, 20.0f);
+    render_group.PushClear(clear_color);
+
 
     if (!m_IsPaused) {
         MaybeMoveSnake(dt_in_seconds);
@@ -50,6 +46,7 @@ bool Snake::Update(std::vector<SDL_Event> &events, RenderGroup &render_group) {
 
     for (SDL_Event &event : events) {
         if (!m_IsRunning) {
+            printf("event loop is running just false\n");
             return false;
         }
         if (m_IsPaused) {
@@ -121,6 +118,7 @@ void Snake::MaybeMoveSnake(float dt_in_seconds) {
             V2ST tail_pos = m_BodyPositions[m_Tail];
             m_BodyBitmap[tail_pos.y] &= ~(1 << tail_pos.x);
 
+            // move tail to next pos
             m_Tail += 1;
             if (m_Tail >= max_positions) {
                 m_Tail = 0;
@@ -227,9 +225,9 @@ void Snake::PlaceFood() {
         if (bit0_index > 0) {
             if (bitmap_row_not & 1) {
                 bit0_index -= 1;
-                bitmap_row_not >>= 1;
-                bit0_x++;
             }
+            bitmap_row_not >>= 1;
+            bit0_x++;
         }
     }
     // Todo: bugfix this

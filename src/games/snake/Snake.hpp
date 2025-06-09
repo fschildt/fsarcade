@@ -26,7 +26,6 @@ public:
 
 public:
     Snake();
-    void Init() override;
     bool Update(std::vector<SDL_Event> &events, RenderGroup &render_group) override;
 
 
@@ -44,27 +43,31 @@ private:
 
 
 private:
+    void Init();
+
+
+private:
     static constexpr size_t MAX_WIDTH = 64; // can't exceed 64, see m_Bitmap
     static constexpr size_t MAX_HEIGHT = 64;
 
-    float m_DtInSecondsRemaining;
-    float m_LastMillisecondsSinceT0;
-    float m_TilesPerSecond;
+    bool m_IsInitialized = false;
+    bool m_IsPaused = false;
+    bool m_IsRunning = true;
 
-    bool m_IsPaused;
-    bool m_IsRunning;
+    float m_DtInSecondsRemaining = 0.0f;
+    float m_LastMillisecondsSinceT0 = SDL_GetTicks();
 
-    Direction m_Direction;
-    Direction m_LastAdvancedDirection;
+    float m_TilesPerSecond = 4.0f;
+    Direction m_Direction = DIRECTION_RIGHT;
+    Direction m_LastAdvancedDirection = DIRECTION_RIGHT;
 
-    size_t m_Width;
-    size_t m_Height;
-    size_t m_Head;
-    size_t m_Tail;
-    uint64_t m_BodyBitmap[MAX_HEIGHT];
+    size_t m_Width = 10;
+    size_t m_Height = 20;
+    size_t m_Tail = 0;
+    size_t m_Head = 1;
+    uint64_t m_BodyBitmap[MAX_HEIGHT]{};
     V2ST m_BodyPositions[MAX_WIDTH * MAX_HEIGHT];
-
-    V2ST m_FoodPosition;
+    V2ST m_FoodPosition = {};
 
     std::mt19937 m_Rng;
 };
