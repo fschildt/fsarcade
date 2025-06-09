@@ -25,7 +25,7 @@ void RenderGroup::SetSize(float xmax, float ymax) {
 }
 
 void RenderGroup::PushClear(V3 color) {
-    m_REntities.emplace_back(REntity{.clear{.type = REntityType_Clear}});
+    m_REntities.emplace_back(REntity{.clear{.type = REntityType_Clear, .color = color}});
     m_RSortEntries.emplace_back(-1, m_REntities.size()-1);
 }
 
