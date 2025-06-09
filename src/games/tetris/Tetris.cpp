@@ -8,7 +8,6 @@
 #include <cstring>
 
 Tetris::Tetris() {
-    Tetromino::InitRng();
     m_TetrominoCounters[m_ActiveTetromino.m_Id] += 1;
 }
 
