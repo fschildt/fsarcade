@@ -24,12 +24,12 @@ void RenderGroup::SetSize(float xmax, float ymax) {
     m_YMax = ymax;
 }
 
-void RenderGroup::PushClear(V3 color) {
+void RenderGroup::PushClear(V3F32 color) {
     m_REntities.emplace_back(REntity{.clear{.type = REntityType_Clear, .color = color}});
     m_RSortEntries.emplace_back(-1, m_REntities.size()-1);
 }
 
-void RenderGroup::PushRectangle(V3 pos, V2 dim, V3 color) {
+void RenderGroup::PushRectangle(V3F32 pos, V2F32 dim, V3F32 color) {
     m_REntities.emplace_back(REntity{.rect{REntityType_Rectangle, pos, dim, color}});
     m_RSortEntries.emplace_back(pos.z, m_REntities.size()-1);
 }

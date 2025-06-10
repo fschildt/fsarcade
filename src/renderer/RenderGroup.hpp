@@ -12,19 +12,19 @@ enum REntityType : int32_t {
 
 struct REntity_Clear {
     REntityType type;
-    V3 color;
+    V3F32 color;
 };
 
 struct REntity_Rectangle {
     REntityType type;
-    V3 pos;
-    V2 dim;
-    V3 color;
+    V3F32 pos;
+    V2F32 dim;
+    V3F32 color;
 };
 
 struct REntity_Bitmap {
     REntityType type;
-    V3 pos;
+    V3F32 pos;
     int32_t width;
     int32_t height;
     void *bitmap;
@@ -52,9 +52,9 @@ public:
     void Sort();
 
 public:
-    void PushClear(V3 color);
-    void PushRectangle(V3 pos, V2 dim, V3 color);
-    void PushBitmap(V3 pos, int32_t width, int32_t height, void *bitmap);
+    void PushClear(V3F32 color);
+    void PushRectangle(V3F32 pos, V2F32 dim, V3F32 color);
+    void PushBitmap(V3F32 pos, int32_t width, int32_t height, void *bitmap);
 
 private:
     friend class GlRenderer;

@@ -4,9 +4,6 @@
 #include <imgui.h>
 #include <random>
 
-V2ST::V2ST(size_t x, size_t y) : x(x), y(y) {
-}
-
 
 Snake::Snake ()
     : m_Rng(std::mt19937((std::random_device()()))) {
@@ -35,7 +32,7 @@ bool Snake::Update(std::vector<SDL_Event> &events, RenderGroup &render_group) {
     m_LastMillisecondsSinceT0 = milliseconds_since_t0;
 
 
-    V3 clear_color = V3(0.0f, 0.0f, 0.0f);
+    V3F32 clear_color = V3F32(0.0f, 0.0f, 0.0f);
     render_group.SetSize(10.0f, 20.0f);
     render_group.PushClear(clear_color);
 
@@ -245,9 +242,9 @@ void Snake::Draw(RenderGroup &render_group) {
     size_t tail = m_Tail;
     if (tail > m_Head) {
         while (tail < m_Width) {
-            V3 pos = {m_BodyPositions[tail].x + 0.1f, m_BodyPositions[tail].y + 0.1f, 1};
-            V2 dim = {0.8f, 0.8f};
-            V3 color = {0.3f, 0.3f, 0.3f};
+            V3F32 pos = {m_BodyPositions[tail].x + 0.1f, m_BodyPositions[tail].y + 0.1f, 1};
+            V2F32 dim = {0.8f, 0.8f};
+            V3F32 color = {0.3f, 0.3f, 0.3f};
             render_group.PushRectangle(pos, dim, color);
             tail++;
         }
@@ -255,18 +252,18 @@ void Snake::Draw(RenderGroup &render_group) {
     }
     // 2) advance to head
     while (tail <= m_Head) {
-        V3 pos = {m_BodyPositions[tail].x + 0.1f, m_BodyPositions[tail].y + 0.1f, 1};
-        V2 dim = {0.8f, 0.8f};
-        V3 color = {0.3f, 0.3f, 0.3f};
+        V3F32 pos = {m_BodyPositions[tail].x + 0.1f, m_BodyPositions[tail].y + 0.1f, 1};
+        V2F32 dim = {0.8f, 0.8f};
+        V3F32 color = {0.3f, 0.3f, 0.3f};
         render_group.PushRectangle(pos, dim, color);
         tail++;
     }
 
 
     /* draw food */
-    V3 pos = {m_FoodPosition.x + 0.1f, m_FoodPosition.y + 0.1f, 1};
-    V2 dim = {0.8f, 0.8f};
-    V3 color = {0.3f, 0.6f, 0.4f};
+    V3F32 pos = {m_FoodPosition.x + 0.1f, m_FoodPosition.y + 0.1f, 1};
+    V2F32 dim = {0.8f, 0.8f};
+    V3F32 color = {0.3f, 0.6f, 0.4f};
     render_group.PushRectangle(pos, dim, color);
 }
 

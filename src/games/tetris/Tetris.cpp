@@ -16,7 +16,7 @@ bool Tetris::Update(std::vector<SDL_Event> &events, RenderGroup &render_group) {
         m_IsInitialized = true;
     }
 
-    V3 clear_color = V3(0.f, 0.f, 0.f);
+    V3F32 clear_color = V3F32(0.f, 0.f, 0.f);
     render_group.SetSize(10, 20);
     render_group.PushClear(clear_color);
 

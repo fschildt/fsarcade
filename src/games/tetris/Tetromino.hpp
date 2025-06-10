@@ -28,7 +28,7 @@ public:
     void Draw(int32_t level, RenderGroup& render_group);
     bool CollidesWithBoard(uint16_t *board_bitmap, int32_t id, int32_t orientation, int32_t x, int32_t y);
 
-    static V3 GetColor(uint8_t id, int32_t level);
+    static V3F32 GetColor(uint8_t id, int32_t level);
 
 
 private:

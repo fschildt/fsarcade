@@ -1,41 +1,51 @@
 #include <basic/math.hpp>
 
-V2::V2(float x, float y) {
+
+V2ST::V2ST(size_t x, size_t y) : x(x), y(y) {
+}
+
+bool V2ST::operator==(V2ST &b) {
+    bool result = this->x == b.x && this->y == b.y;
+    return result;
+}
+
+
+V2F32::V2F32(float x, float y) {
     this->x = x;
     this->y = y;
 }
 
-V2 V2::operator/(float scalar) {
-    V2 result = {};
+V2F32 V2F32::operator/(float scalar) {
+    V2F32 result = {};
     result.x = this->x / scalar;
     result.y = this->y / scalar;
     return result;
 }
 
-V2 V2::operator*(float scalar) {
-    V2 result = {};
+V2F32 V2F32::operator*(float scalar) {
+    V2F32 result = {};
     result.x = this->x * scalar;
     result.y = this->y * scalar;
     return result;
 }
 
 
-V3::V3(float x, float y, float z) {
+V3F32::V3F32(float x, float y, float z) {
     this->x = x;
     this->y = y;
     this->z = z;
 }
 
-V3 V3::operator/(float scalar) {
-    V3 result = {};
+V3F32 V3F32::operator/(float scalar) {
+    V3F32 result = {};
     result.x = this->x / scalar;
     result.y = this->y / scalar;
     result.z = this->z / scalar;
     return result;
 }
 
-V3 V3::operator*(float scalar) {
-    V3 result = {};
+V3F32 V3F32::operator*(float scalar) {
+    V3F32 result = {};
     result.x = this->x * scalar;
     result.y = this->y * scalar;
     result.z = this->z * scalar;
@@ -43,15 +53,15 @@ V3 V3::operator*(float scalar) {
 }
 
 
-V4::V4(float x, float y, float z, float w) {
+V4F32::V4F32(float x, float y, float z, float w) {
     this->x = x;
     this->y = y;
     this->z = z;
     this->z = z;
 }
 
-V4 V4::operator/(float scalar) {
-    V4 result = {};
+V4F32 V4F32::operator/(float scalar) {
+    V4F32 result = {};
     result.x = this->x / scalar;
     result.y = this->y / scalar;
     result.z = this->z / scalar;
@@ -59,8 +69,8 @@ V4 V4::operator/(float scalar) {
     return result;
 }
 
-V4 V4::operator*(float scalar) {
-    V4 result = {};
+V4F32 V4F32::operator*(float scalar) {
+    V4F32 result = {};
     result.x = this->x * scalar;
     result.y = this->y * scalar;
     result.z = this->z * scalar;

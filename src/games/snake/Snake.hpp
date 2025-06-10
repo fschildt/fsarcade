@@ -6,14 +6,6 @@
 #include <random>
 
 
-struct V2ST {
-    V2ST() = default;
-    V2ST(size_t x, size_t y);
-    bool operator==(V2ST &b) {return x == b.x && y == b.y;}
-    size_t x;
-    size_t y;
-};
-
 class Snake : public Game {
 public:
     enum Direction {

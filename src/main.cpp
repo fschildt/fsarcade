@@ -39,7 +39,7 @@ do_menu(RenderGroup &render_group)
     ImGui::End();
 
 
-    V3 clear_color = V3(0.4f, 0.4f, 0.4f);
+    V3F32 clear_color = V3F32(0.4f, 0.4f, 0.4f);
     render_group.SetSize(10.0f, 20.0f);
     render_group.PushClear(clear_color);
 

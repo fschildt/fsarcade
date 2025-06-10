@@ -88,9 +88,9 @@ void Board::Draw(int32_t level, RenderGroup& render_group) {
         for (size_t x = 0; x < 10; x++) {
             uint8_t tetromino_id = m_Idmap[y][x];
             if (tetromino_id < TETROMINO_ID_COUNT) {
-                V3 pos = {x + 0.1f, y + 0.1f, 1};
-                V2 dim = {0.8f, 0.8f};
-                V3 color = Tetromino::GetColor(tetromino_id, level);
+                V3F32 pos = {x + 0.1f, y + 0.1f, 1};
+                V2F32 dim = {0.8f, 0.8f};
+                V3F32 color = Tetromino::GetColor(tetromino_id, level);
                 render_group.PushRectangle(pos, dim, color);
             }
         }

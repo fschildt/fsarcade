@@ -109,8 +109,8 @@ void GlRenderer::Draw(RenderGroup& render_group, int width, int height) {
 
                 // convert pos from [0, rg_max] to [-1, 1]
                 // convert dim from [0, rg_max] to [ 0, 2]
-                V3 pos = rect.pos;
-                V2 dim = rect.dim;
+                V3F32 pos = rect.pos;
+                V2F32 dim = rect.dim;
                 pos.x = 2*(rect.pos.x / rg_xmax) - 1;
                 pos.y = 2*(rect.pos.y / rg_ymax) - 1;
                 dim.x = 2*(rect.dim.x / rg_xmax);

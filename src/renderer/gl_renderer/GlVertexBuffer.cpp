@@ -25,12 +25,12 @@ uint32_t GlVertexBuffer::GetCount() {
     return m_Vertices.size();
 }
 
-void GlVertexBuffer::PushRectangle(V3 pos, V2 dim, V3 color) {
-    V3 positions[4] = {
-        V3(pos.x,         pos.y,         pos.z),
-        V3(pos.x + dim.x, pos.y,         pos.z),
-        V3(pos.x + dim.x, pos.y + dim.y, pos.z),
-        V3(pos.x,         pos.y + dim.y, pos.z),
+void GlVertexBuffer::PushRectangle(V3F32 pos, V2F32 dim, V3F32 color) {
+    V3F32 positions[4] = {
+        V3F32(pos.x,         pos.y,         pos.z),
+        V3F32(pos.x + dim.x, pos.y,         pos.z),
+        V3F32(pos.x + dim.x, pos.y + dim.y, pos.z),
+        V3F32(pos.x,         pos.y + dim.y, pos.z),
     };
 
     for (int i = 0; i < 4; i++) {

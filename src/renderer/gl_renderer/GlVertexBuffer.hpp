@@ -3,8 +3,8 @@
 #include <renderer/Renderer.hpp>
 
 struct GlVertex {
-    V3 pos;
-    V3 color;
+    V3F32 pos;
+    V3F32 color;
 };
 
 class GlVertexBuffer {
@@ -17,7 +17,7 @@ public:
     float *GetData();
     uint32_t GetCount();
 
-    void PushRectangle(V3 pos, V2 dim, V3 color);
+    void PushRectangle(V3F32 pos, V2F32 dim, V3F32 color);
     void TransferData();
 
 private:

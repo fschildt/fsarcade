@@ -109,9 +109,9 @@ void Tetromino::Draw(int32_t level, RenderGroup& render_group) {
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++) {
             if (left_aligned_bitmap[y] & (0x8000 >> x)) {
-                V3 pos = V3(x0 + x + 0.1f, y0 + y + 0.1f, 2);
-                V2 dim = V2(0.8, 0.8);
-                V3 color = GetColor(m_Id, level);
+                V3F32 pos = V3F32(x0 + x + 0.1f, y0 + y + 0.1f, 2);
+                V2F32 dim = V2F32(0.8, 0.8);
+                V3F32 color = GetColor(m_Id, level);
                 render_group.PushRectangle(pos, dim, color);
             }
         }
@@ -123,22 +123,22 @@ void Tetromino::GetBitmap(uint16_t *bitmap) {
 }
 
 // Todo: make a proper colormap
-V3 Tetromino::GetColor(uint8_t id, int32_t level) {
-    V3 color;
+V3F32 Tetromino::GetColor(uint8_t id, int32_t level) {
+    V3F32 color;
     switch (id) {
         case TETROMINO_I:
         case TETROMINO_O:
         case TETROMINO_T: {
-            color = V3(0.8f, 0.8f, 0.8f);
+            color = V3F32(0.8f, 0.8f, 0.8f);
         } break;
 
         case TETROMINO_J:
         case TETROMINO_S: {
-            color = V3(0.8, 0.2, 0.2);
+            color = V3F32(0.8, 0.2, 0.2);
         } break;
 
         default: {
-            color = V3(0.2, 0.4, 0.2);
+            color = V3F32(0.2, 0.4, 0.2);
         }
     }
     return color;
