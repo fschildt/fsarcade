@@ -1,5 +1,6 @@
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_timer.h>
+#include <algorithm>
 #include <games/snake/Snake.hpp>
 #include <imgui.h>
 #include <random>
@@ -249,6 +250,7 @@ void Snake::Draw(RenderGroup &render_group) {
     float map_x = (world_width - map_width) / 2;
     float map_y = (world_height - map_height) / 2;
 
+    size_t max_positions = sizeof(m_BodyPositions) / sizeof(m_BodyPositions[0]);
 
 
     /* draw map background */
@@ -262,7 +264,7 @@ void Snake::Draw(RenderGroup &render_group) {
     // 1) if tail > head: advance to end first
     size_t tail = m_Tail;
     if (tail > m_Head) {
-        while (tail < m_Width) {
+        while (tail < max_positions) {
             V3F32 local_pos = {
                 m_BodyPositions[tail].x * tile_size + bodypart_offset,
                 m_BodyPositions[tail].y * tile_size + bodypart_offset,
