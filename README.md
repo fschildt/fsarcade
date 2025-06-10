@@ -1,12 +1,22 @@
 # fsarcade
-Tetris
-## compile and run on linux
+Games: Tetris, Snake
+
+## Usage on Linux
 ./compile.sh\
 ./fsarcade
 
-# Controls
-arrow keys for translation\
-z,x for rotation
+
+## Controls
+General:
+- Escape: toggle pause menu during a game
+
+Tetris:
+- Arrow Keys: move left/right
+- z, x: rotate
+
+Snake:
+- Arrow Keys: move up/down/right/left
+
 
 ## Picture
 <p align="center">
