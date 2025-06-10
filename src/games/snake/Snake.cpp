@@ -204,8 +204,8 @@ void Snake::PlaceFood() {
 
     std::uniform_int_distribution<int32_t> m_Dist(0, bit0_count_total-1);
     size_t bit0_index = m_Dist(m_Rng);
-    size_t bit0_x;
-    size_t bit0_y;
+    size_t bit0_x = 0;
+    size_t bit0_y = 0;
 
     // find y
     for (size_t y = 0; y < m_Height; y++) {
@@ -217,21 +217,16 @@ void Snake::PlaceFood() {
     }
 
     // find x
-    bit0_x = 0;
     uint64_t bitmap_row_not = ~m_BodyBitmap[bit0_y];
     for (size_t x = 0; x < m_Width; x++) {
-        if (bit0_index > 0) {
-            if (bitmap_row_not & 1) {
-                bit0_index -= 1;
+        if (bitmap_row_not & 1) {
+            if (bit0_index == 0) {
+                bit0_x = x;
+                break;
             }
-            bitmap_row_not >>= 1;
-            bit0_x++;
+            bit0_index--;
         }
-    }
-    // Todo: bugfix this
-    if (bit0_index != 0) {
-        printf("BUG!!!\n\tbit0_index = %lu, bit0_x = %lu, bit0_y =%lu\n",
-                bit0_index, bit0_x, bit0_y);
+        bitmap_row_not >>= 1;
     }
 
     m_FoodPosition = {bit0_x, bit0_y};

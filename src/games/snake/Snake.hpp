@@ -39,8 +39,8 @@ private:
 
 
 private:
-    static constexpr size_t MAX_MAP_WIDTH = 24; // can't exceed 64, see m_Bitmap
-    static constexpr size_t MAX_MAP_HEIGHT = 24;
+    static constexpr size_t MAX_MAP_WIDTH = 16; // can't exceed 64, see m_Bitmap
+    static constexpr size_t MAX_MAP_HEIGHT = 16;
 
     bool m_IsInitialized = false;
     bool m_IsPaused = false;
