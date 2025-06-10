@@ -29,6 +29,13 @@ V2F32 V2F32::operator*(float scalar) {
     return result;
 }
 
+V2F32 V2F32::operator+(V2F32 other) {
+    V2F32 result = {};
+    result.x = this->x + other.x;
+    result.y = this->y + other.y;
+    return result;
+}
+
 
 V3F32::V3F32(float x, float y, float z) {
     this->x = x;
@@ -78,3 +85,5 @@ V4F32 V4F32::operator*(float scalar) {
     return result;
 }
 
+V2I32::V2I32(float x, float y) : x(x), y(y) {
+}

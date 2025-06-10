@@ -32,8 +32,8 @@ bool Snake::Update(std::vector<SDL_Event> &events, RenderGroup &render_group) {
     m_LastMillisecondsSinceT0 = milliseconds_since_t0;
 
 
-    V3F32 clear_color = V3F32(0.0f, 0.0f, 0.0f);
-    render_group.SetSize(10.0f, 20.0f);
+    V3F32 clear_color = V3F32(0.3f, 0.3f, 0.3f);
+    render_group.SetSize(16.0f, 9.0f);
     render_group.PushClear(clear_color);
 
 
@@ -237,32 +237,81 @@ void Snake::PlaceFood() {
 }
 
 void Snake::Draw(RenderGroup &render_group) {
+    float world_width = 16.0f;
+    float world_height = 9.0f;
+
+    float tile_size = (world_width / 2) / MAX_MAP_WIDTH;
+    float bodypart_size = 0.8f * tile_size;
+    float bodypart_offset = (tile_size - bodypart_size) / 2;
+
+    float map_width = tile_size * m_Width;
+    float map_height = tile_size * m_Height;
+    float map_x = (world_width - map_width) / 2;
+    float map_y = (world_height - map_height) / 2;
+
+
+
+    /* draw map background */
+    V3F32 map_world_pos = {map_x, map_y, 1.0f};
+    V2F32 map_world_dim = {map_width, map_height};
+    V3F32 bg_color = {0.0f, 0.0f, 0.0f};
+    render_group.PushRectangle(map_world_pos, map_world_dim, bg_color);
+
+
     /* draw snake */
     // 1) if tail > head: advance to end first
     size_t tail = m_Tail;
     if (tail > m_Head) {
         while (tail < m_Width) {
-            V3F32 pos = {m_BodyPositions[tail].x + 0.1f, m_BodyPositions[tail].y + 0.1f, 1};
-            V2F32 dim = {0.8f, 0.8f};
+            V3F32 local_pos = {
+                m_BodyPositions[tail].x * tile_size + bodypart_offset,
+                m_BodyPositions[tail].y * tile_size + bodypart_offset,
+                2.0f
+            };
+            V2F32 local_dim = {bodypart_size, bodypart_size};
+
+            V3F32 world_pos = {
+                map_world_pos.x + local_pos.x,
+                map_world_pos.y + local_pos.y,
+                2.0f
+            };
+            V2F32 world_dim = local_dim;
+
             V3F32 color = {0.3f, 0.3f, 0.3f};
-            render_group.PushRectangle(pos, dim, color);
+            render_group.PushRectangle(world_pos, world_dim, color);
             tail++;
         }
         tail = 0;
     }
     // 2) advance to head
     while (tail <= m_Head) {
-        V3F32 pos = {m_BodyPositions[tail].x + 0.1f, m_BodyPositions[tail].y + 0.1f, 1};
-        V2F32 dim = {0.8f, 0.8f};
+        V3F32 local_pos = {
+            m_BodyPositions[tail].x * tile_size + bodypart_offset,
+            m_BodyPositions[tail].y * tile_size + bodypart_offset,
+            2.0f
+        };
+        V2F32 local_dim = {bodypart_size, bodypart_size};
+
+        V3F32 world_pos = {
+            map_world_pos.x + local_pos.x,
+            map_world_pos.y + local_pos.y,
+            2.0f
+        };
+        V2F32 world_dim = local_dim;
+
         V3F32 color = {0.3f, 0.3f, 0.3f};
-        render_group.PushRectangle(pos, dim, color);
+        render_group.PushRectangle(world_pos, world_dim, color);
         tail++;
     }
 
 
     /* draw food */
-    V3F32 pos = {m_FoodPosition.x + 0.1f, m_FoodPosition.y + 0.1f, 1};
-    V2F32 dim = {0.8f, 0.8f};
+    V3F32 pos = {
+        map_world_pos.x + m_FoodPosition.x * tile_size + bodypart_offset,
+        map_world_pos.y + m_FoodPosition.y * tile_size + bodypart_offset,
+        2.0f
+    };
+    V2F32 dim = {bodypart_size, bodypart_size};
     V3F32 color = {0.3f, 0.6f, 0.4f};
     render_group.PushRectangle(pos, dim, color);
 }

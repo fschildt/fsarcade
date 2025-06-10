@@ -20,7 +20,7 @@ public:
 public:
     virtual ~Renderer() = 0;
     virtual bool Init() = 0;
-    virtual void Draw(RenderGroup &render_group, int width, int height) = 0;
+    virtual void Draw(RenderGroup &render_group) = 0;
     virtual void Present() = 0;
 };
 

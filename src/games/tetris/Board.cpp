@@ -84,14 +84,59 @@ int32_t Board::ClearRows(int32_t y0) {
 }
 
 void Board::Draw(int32_t level, RenderGroup& render_group) {
+    float world_width = 16.0f;
+    float world_height = 9.0f;
+    float tetromino_size_with_border = world_height / 20.0f;
+    float tetromino_size = 0.8f * tetromino_size_with_border;
+    float tetromino_offset = 0.1f * tetromino_size_with_border;
+    V2F32 board_world_pos = {
+        (16.0f - tetromino_size_with_border*10) / 2,
+        0.0f
+    };
+
+
+    // background
+    V3F32 bg_world_pos = {
+        board_world_pos.x,
+        board_world_pos.y,
+        1.0f
+    };
+    V2F32 bg_world_dim = {
+        tetromino_size_with_border * 10,
+        tetromino_size_with_border * 20
+    };
+    V3F32 bg_color = {0.0f, 0.0f, 0.0f};
+    render_group.PushRectangle(bg_world_pos, bg_world_dim, bg_color);
+
+
+    // tetrominos
     for (size_t y = 0; y < 20; y++) {
         for (size_t x = 0; x < 10; x++) {
             uint8_t tetromino_id = m_Idmap[y][x];
             if (tetromino_id < TETROMINO_ID_COUNT) {
-                V3F32 pos = {x + 0.1f, y + 0.1f, 1};
-                V2F32 dim = {0.8f, 0.8f};
+                // local space
+                V2F32 local_pos = {
+                    x * tetromino_size_with_border + tetromino_offset,
+                    y * tetromino_size_with_border + tetromino_offset
+                };
+                V2F32 local_dim = {tetromino_size, tetromino_size};
+
+
+                // world space
+                V3F32 world_pos = {
+                    board_world_pos.x + local_pos.x,
+                    board_world_pos.y + local_pos.y,
+                    2.0f
+                };
+                V2F32 world_dim = local_dim;
+
+
+                // Todo: view space
+                // Todo: clip space
+
+
                 V3F32 color = Tetromino::GetColor(tetromino_id, level);
-                render_group.PushRectangle(pos, dim, color);
+                render_group.PushRectangle(world_pos, world_dim, color);
             }
         }
     }

@@ -11,7 +11,7 @@ public:
     ~GlRenderer() override;
 
     bool Init() override;
-    void Draw(RenderGroup& render_group, int width, int height) override;
+    void Draw(RenderGroup& render_group) override;
     void Present() override;
 
 private:

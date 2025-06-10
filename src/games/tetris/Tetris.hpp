@@ -31,13 +31,11 @@ private:
     Tetromino m_NextTetromino;
     Board m_Board;
 
-
     uint32_t m_TetrominoCounters[TETROMINO_ID_COUNT] = {};
     uint32_t m_Score = 0;
     uint32_t m_LineCounter = 0;
     uint32_t m_StartingLevel = 0;
     uint32_t m_Level = 0;
-
     uint32_t m_SoftdropCounter = 0;
 };
 

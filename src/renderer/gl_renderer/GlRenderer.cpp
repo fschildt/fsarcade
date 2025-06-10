@@ -79,12 +79,12 @@ bool GlRenderer::Init() {
     return true;
 }
 
-void GlRenderer::Draw(RenderGroup& render_group, int width, int height) {
-    glViewport(0, 0, width, height);
+void GlRenderer::Draw(RenderGroup& render_group) {
+    glViewport(0, 0, render_group.m_Width, render_group.m_Height);
     render_group.Sort();
 
     // find values which allows us to scale and center properly
-    float screen_ratio = (float) width / (float) height;
+    float screen_ratio = (float) render_group.m_Width / (float) render_group.m_Height;
     float rg_xmax = render_group.m_XMax;
     float rg_ymax = render_group.m_YMax;
 

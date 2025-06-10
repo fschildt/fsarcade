@@ -66,7 +66,7 @@ main(int argc, char **argv)
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
-    SDL_Window *window = SDL_CreateWindow("fsarcade", 400, 800, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY);
+    SDL_Window *window = SDL_CreateWindow("fsarcade", 1280, 720, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY);
     if (!window) {
         std::cerr << "Failed to create SDL_window: " << SDL_GetError() << '\n';
         return EXIT_FAILURE;
@@ -103,6 +103,7 @@ main(int argc, char **argv)
     }
 
     RenderGroup render_group;
+    SDL_GetWindowSize(window, &render_group.m_Width, &render_group.m_Height);
 
 
     std::vector<SDL_Event> game_events;
@@ -118,16 +119,12 @@ main(int argc, char **argv)
 
         SDL_Event event;
         while (cur_game_events < max_game_events && SDL_PollEvent(&event)) {
-            if (io.WantCaptureKeyboard) {
-                if (event.type == SDL_EVENT_KEY_DOWN)
-                {
-                    game_events.emplace_back(event);
-                    cur_game_events++;
-                }
+            if (event.type == SDL_EVENT_KEY_DOWN) {
+                game_events.emplace_back(event);
+                cur_game_events++;
             }
-            else if (io.WantCaptureMouse) {
-            }
-            else {
+            else if (event.type == SDL_EVENT_WINDOW_RESIZED) {
+
                 game_events.emplace_back(event);
                 cur_game_events++;
             }
@@ -141,6 +138,13 @@ main(int argc, char **argv)
                 goto QUIT;
             }
         }
+
+
+        int w, h;
+        SDL_GetWindowSize(window, &w, &h);
+        render_group.m_Width = w;
+        render_group.m_Height = h;
+
 
         if (game) {
             bool keep_game_running = game->Update(game_events, render_group);
@@ -157,6 +161,7 @@ main(int argc, char **argv)
         game_events.clear();
 
 
+
         ImGuiIO& io = ImGui::GetIO();
         ImGuiWindowFlags flags = ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 
@@ -166,16 +171,11 @@ main(int argc, char **argv)
         ImGui::End();
 
 
+        renderer->Draw(render_group);
         ImGui::Render();
-        glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
-
-        int w, h;
-        SDL_GetWindowSize(window, &w, &h);
-        renderer->Draw(render_group, w, h);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         renderer->Present();
         render_group.Reset();
-
     }
 
 QUIT:

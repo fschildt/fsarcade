@@ -56,8 +56,13 @@ public:
     void PushRectangle(V3F32 pos, V2F32 dim, V3F32 color);
     void PushBitmap(V3F32 pos, int32_t width, int32_t height, void *bitmap);
 
+public:
+    int32_t m_Width;
+    int32_t m_Height;
+
 private:
     friend class GlRenderer;
+
 
     float m_XMax;
     float m_YMax;

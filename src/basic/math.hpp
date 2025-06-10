@@ -17,6 +17,7 @@ union V2F32 {
     V2F32(float x, float y);
     V2F32 operator/(float scalar);
     V2F32 operator*(float scalar);
+    V2F32 operator+(V2F32 other);
     struct {
         float x;
         float y;
@@ -59,4 +60,15 @@ union V4F32 {
     };
 };
 
-
+union V2I32 {
+    V2I32() = default;
+    V2I32 (float x, float y);
+    struct {
+        float x;
+        float y;
+    };
+    struct {
+        float a;
+        float b;
+    };
+};
