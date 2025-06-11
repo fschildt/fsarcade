@@ -1,4 +1,5 @@
 #include <games/tetris/Tetromino.hpp>
+#include <random>
 #include <stdlib.h>
 
 // layout of a left_aligned_bitmap: xxxx000000000000
@@ -55,17 +56,16 @@ static const uint16_t s_left_aligned_bitmaps[7][4][4] = {
     }
 };
 
-static std::uniform_int_distribution<int32_t> s_dist(0, TETROMINO_ID_COUNT-1);
 
-std::mt19937& Tetromino::GetRng() {
-    uint32_t seed = std::random_device()();
-    static std::mt19937 rng(seed);
-    return rng;
+TetrominoId Tetromino::GetRandomId() {
+    static std::uniform_int_distribution<int> s_Dist(0, TETROMINO_ID_COUNT-1);
+    static std::mt19937 s_Rng((std::random_device()()));
+    TetrominoId id = static_cast<TetrominoId>(s_Dist(s_Rng));
+    return id;
 }
 
-
 Tetromino::Tetromino() :
-        m_Id(s_dist(GetRng())),
+        m_Id(GetRandomId()),
         m_Orientation(0),
         m_X(6),
         m_Y(20)

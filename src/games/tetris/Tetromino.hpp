@@ -3,7 +3,6 @@
 #include <basic/defs.hpp>
 #include <basic/math.hpp>
 #include <renderer/RenderGroup.hpp>
-#include <random>
 
 enum TetrominoId {
     TETROMINO_O = 0,
@@ -32,7 +31,7 @@ public:
 
 
 private:
-    static std::mt19937& GetRng();
+    static TetrominoId GetRandomId();
 
 
 public:
