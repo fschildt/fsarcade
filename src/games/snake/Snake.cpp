@@ -1,33 +1,41 @@
-#include <SDL3/SDL_events.h>
-#include <SDL3/SDL_timer.h>
-#include <algorithm>
 #include <games/snake/Snake.hpp>
 #include <imgui.h>
-#include <random>
 
 
-Snake::Snake ()
-    : m_Rng(std::mt19937((std::random_device()()))) {
-}
+Snake::Snake () {
+    m_IsPaused = false;
+    m_IsRunning = true;
 
-void Snake::Init() {
-    size_t head_x = m_Width / 2;
-    size_t head_y = m_Height / 2;
-    m_BodyPositions[0] = V2ST(head_x -1, head_y);
-    m_BodyPositions[1] = V2ST(head_x, head_y);
-    m_BodyBitmap[head_y] = 3 << (m_Width - 1 - head_x);
-
-    PlaceFood();
+    m_DtInSecondsRemaining = 0.0f;
     m_LastMillisecondsSinceT0 = SDL_GetTicks();
 
-    m_IsInitialized = true;
+    m_TilesPerSecond = 4.0f;
+    m_Direction = DIRECTION_RIGHT;
+    m_LastAdvancedDirection = DIRECTION_RIGHT;
+
+    m_MapWidth = 16;
+    m_MapHeight = 16;
+    assert(MAX_MAP_WIDTH <= 64); // m_BodyBitmap is uint64_t[]. We can't exceed that!
+    assert(MAX_MAP_HEIGHT <= 64);
+    assert(m_MapWidth <= MAX_MAP_WIDTH);
+    assert(m_MapHeight <= MAX_MAP_WIDTH);
+
+    m_Tail = 0;
+    m_Head = 1;
+    memset(m_BodyBitmap, 0, sizeof(m_BodyBitmap));
+
+    size_t head_x = m_MapWidth / 2;
+    size_t head_y = m_MapHeight / 2;
+    m_BodyPositions[0] = {head_x -1, head_y};
+    m_BodyPositions[1] = {head_x, head_y};
+
+    m_Rng = std::mt19937((std::random_device()()));
+    m_Dist = std::uniform_int_distribution<int32_t>(0, m_MapWidth * m_MapHeight - 3);
+
+    SpawnFood();
 }
 
 bool Snake::Update(std::vector<SDL_Event> &events, RenderGroup &render_group) {
-    if (!m_IsInitialized) {
-        Init();
-    }
-
     uint64_t milliseconds_since_t0 = SDL_GetTicks();
     float dt_in_seconds = (milliseconds_since_t0 - m_LastMillisecondsSinceT0) / 1000.0f;
     m_LastMillisecondsSinceT0 = milliseconds_since_t0;
@@ -37,10 +45,6 @@ bool Snake::Update(std::vector<SDL_Event> &events, RenderGroup &render_group) {
     render_group.SetSize(16.0f, 9.0f);
     render_group.PushClear(clear_color);
 
-
-    if (!m_IsPaused) {
-        MaybeMoveSnake(dt_in_seconds);
-    }
 
     for (SDL_Event &event : events) {
         if (!m_IsRunning) {
@@ -55,6 +59,11 @@ bool Snake::Update(std::vector<SDL_Event> &events, RenderGroup &render_group) {
         }
     }
 
+    if (!m_IsPaused) {
+        MaybeMoveSnake(dt_in_seconds);
+    }
+
+
     Draw(render_group);
     DoImgui();
 
@@ -65,7 +74,7 @@ void Snake::MaybeMoveSnake(float dt_in_seconds) {
     float dt_in_seconds_to_use = m_DtInSecondsRemaining + dt_in_seconds;
     float tiles_per_second = m_TilesPerSecond;
     float seconds_per_tile = 1.0f / tiles_per_second;
-    while (dt_in_seconds_to_use > seconds_per_tile + 0.00000001) {
+    while (dt_in_seconds_to_use > seconds_per_tile) {
         V2ST head_pos = m_BodyPositions[m_Head];
         V2ST tail_pos = m_BodyPositions[m_Tail];
 
@@ -83,7 +92,7 @@ void Snake::MaybeMoveSnake(float dt_in_seconds) {
         else if (m_Direction == DIRECTION_LEFT) {
             head_pos.x -= 1;
         }
-        if (head_pos.y >= m_Height || head_pos.x >= m_Width) {
+        if (head_pos.y >= m_MapHeight || head_pos.x >= m_MapWidth) {
             m_IsRunning = false;
             return;
         }
@@ -98,30 +107,31 @@ void Snake::MaybeMoveSnake(float dt_in_seconds) {
         }
 
 
-        // add head_pos
+        // advance head
         size_t max_positions = sizeof(m_BodyPositions) / sizeof(m_BodyPositions[0]);
         m_Head += 1;
         if (m_Head >= max_positions) {
             m_Head = 0;
         }
+
         m_BodyPositions[m_Head] = head_pos;
         m_BodyBitmap[head_pos.y] |= (1 << head_pos.x);
 
 
         if (m_BodyPositions[m_Head] == m_FoodPosition) {
-            PlaceFood();
+            SpawnFood();
         }
         else {
-            // delete tail from bitmap
+            // advance tail
             V2ST tail_pos = m_BodyPositions[m_Tail];
             m_BodyBitmap[tail_pos.y] &= ~(1 << tail_pos.x);
 
-            // move tail to next pos
             m_Tail += 1;
             if (m_Tail >= max_positions) {
                 m_Tail = 0;
             }
         }
+
 
         m_LastAdvancedDirection = m_Direction;
         dt_in_seconds_to_use -= seconds_per_tile;
@@ -182,12 +192,12 @@ void Snake::ProcessEventDuringResume(SDL_Event &event) {
     }
 }
 
-void Snake::PlaceFood() {
-    uint32_t bit0_counts[m_Height];
+void Snake::SpawnFood() {
+    uint32_t bit0_counts[m_MapHeight];
     uint32_t bit0_count_total = 0;
 
     // count bits
-    for (size_t y = 0; y < m_Height; y++) {
+    for (size_t y = 0; y < m_MapHeight; y++) {
         uint32_t bit1_count = 0;
 
         uint64_t bitmap_row = m_BodyBitmap[y];
@@ -196,19 +206,22 @@ void Snake::PlaceFood() {
             bit1_count += 1;
         }
 
-        uint32_t bit0_count = m_Width - bit1_count;
+        uint32_t bit0_count = m_MapWidth - bit1_count;
         bit0_counts[y] = bit0_count;
         bit0_count_total += bit0_count;
     }
 
+    if (bit0_count_total == 0) {
+        return;
+    }
 
-    std::uniform_int_distribution<int32_t> m_Dist(0, bit0_count_total-1);
+    m_Dist.param(std::uniform_int_distribution<int32_t>::param_type(0, bit0_count_total - 1));
     size_t bit0_index = m_Dist(m_Rng);
     size_t bit0_x = 0;
     size_t bit0_y = 0;
 
     // find y
-    for (size_t y = 0; y < m_Height; y++) {
+    for (size_t y = 0; y < m_MapHeight; y++) {
         if (bit0_index < bit0_counts[y]) {
             bit0_y = y;
             break;
@@ -218,7 +231,7 @@ void Snake::PlaceFood() {
 
     // find x
     uint64_t bitmap_row_not = ~m_BodyBitmap[bit0_y];
-    for (size_t x = 0; x < m_Width; x++) {
+    for (size_t x = 0; x < m_MapWidth; x++) {
         if (bitmap_row_not & 1) {
             if (bit0_index == 0) {
                 bit0_x = x;
@@ -240,8 +253,8 @@ void Snake::Draw(RenderGroup &render_group) {
     float bodypart_size = 0.8f * tile_size;
     float bodypart_offset = (tile_size - bodypart_size) / 2;
 
-    float map_width = tile_size * m_Width;
-    float map_height = tile_size * m_Height;
+    float map_width = tile_size * m_MapWidth;
+    float map_height = tile_size * m_MapHeight;
     float map_x = (world_width - map_width) / 2;
     float map_y = (world_height - map_height) / 2;
 
