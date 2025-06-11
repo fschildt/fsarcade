@@ -84,13 +84,13 @@ int32_t Board::ClearRows(int32_t y0) {
 }
 
 void Board::Draw(int32_t level, RenderGroup& render_group) {
-    float world_width = 16.0f;
-    float world_height = 9.0f;
+    float world_width = 4.0f;
+    float world_height = 3.0f;
     float tetromino_size_with_border = world_height / 20.0f;
     float tetromino_size = 0.8f * tetromino_size_with_border;
     float tetromino_offset = 0.1f * tetromino_size_with_border;
     V2F32 board_world_pos = {
-        (16.0f - tetromino_size_with_border*10) / 2,
+        (world_width - tetromino_size_with_border*10) / 2.0f,
         0.0f
     };
 

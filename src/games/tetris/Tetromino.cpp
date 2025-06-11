@@ -103,8 +103,8 @@ bool Tetromino::CollidesWithBoard(uint16_t *board_bitmap, int32_t id, int32_t or
 }
 
 void Tetromino::Draw(int32_t level, RenderGroup& render_group) {
-    float world_width = 16;
-    float world_height = 9;
+    float world_width = 4.0f;
+    float world_height = 3.0f;
     float tetromino_size_with_border = world_height / 20.0f;
     float tetromino_size = 0.8f * tetromino_size_with_border;
     float tetromino_offset = 0.1f * tetromino_size_with_border;
@@ -112,8 +112,8 @@ void Tetromino::Draw(int32_t level, RenderGroup& render_group) {
     const uint16_t *left_aligned_bitmap = s_left_aligned_bitmaps[m_Id][m_Orientation];
     int8_t x0 = m_X - 3;
     int8_t y0 = m_Y - 3;
-    float world_pos_x = 5.75f + x0 * tetromino_size_with_border;
-    float world_pos_y = 0.0f + y0 * tetromino_size_with_border;
+    float world_pos_x = ((world_width - tetromino_size_with_border*10) / 2.0f) + x0 * tetromino_size_with_border;
+    float world_pos_y = y0 * tetromino_size_with_border;
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++) {
             if (left_aligned_bitmap[y] & (0x8000 >> x)) {

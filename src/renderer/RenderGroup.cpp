@@ -19,9 +19,9 @@ void RenderGroup::Reset() {
     m_RSortEntries.reserve(1024);
 }
 
-void RenderGroup::SetSize(float xmax, float ymax) {
-    m_XMax = xmax;
-    m_YMax = ymax;
+void RenderGroup::SetSize(float width, float height) {
+    m_XMax = width;
+    m_YMax = height;
 }
 
 void RenderGroup::PushClear(V3F32 color) {

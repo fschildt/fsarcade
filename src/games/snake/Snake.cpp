@@ -42,7 +42,7 @@ bool Snake::Update(std::vector<SDL_Event> &events, RenderGroup &render_group) {
 
 
     V3F32 clear_color = V3F32(0.3f, 0.3f, 0.3f);
-    render_group.SetSize(16.0f, 9.0f);
+    render_group.SetSize(4.0f, 3.0f);
     render_group.PushClear(clear_color);
 
 
@@ -246,8 +246,8 @@ void Snake::SpawnFood() {
 }
 
 void Snake::Draw(RenderGroup &render_group) {
-    float world_width = 16.0f;
-    float world_height = 9.0f;
+    float world_width = 4.0f;
+    float world_height = 3.0f;
 
     float tile_size = (world_width / 2) / MAX_MAP_WIDTH;
     float bodypart_size = 0.8f * tile_size;

@@ -47,7 +47,7 @@ struct RSortEntry {
 class RenderGroup {
 public:
     RenderGroup();
-    void SetSize(float xmax, float ymax);
+    void SetSize(float width, float height);
     void Reset();
     void Sort();
 

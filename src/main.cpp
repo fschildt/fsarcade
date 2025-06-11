@@ -66,7 +66,7 @@ main(int argc, char **argv)
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
-    SDL_Window *window = SDL_CreateWindow("fsarcade", 1280, 720, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY);
+    SDL_Window *window = SDL_CreateWindow("fsarcade", 1024, 768, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY);
     if (!window) {
         std::cerr << "Failed to create SDL_window: " << SDL_GetError() << '\n';
         return EXIT_FAILURE;
@@ -120,11 +120,6 @@ main(int argc, char **argv)
         SDL_Event event;
         while (cur_game_events < max_game_events && SDL_PollEvent(&event)) {
             if (event.type == SDL_EVENT_KEY_DOWN) {
-                game_events.emplace_back(event);
-                cur_game_events++;
-            }
-            else if (event.type == SDL_EVENT_WINDOW_RESIZED) {
-
                 game_events.emplace_back(event);
                 cur_game_events++;
             }

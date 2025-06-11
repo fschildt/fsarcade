@@ -84,7 +84,6 @@ void GlRenderer::Draw(RenderGroup& render_group) {
     render_group.Sort();
 
     // find values which allows us to scale and center properly
-    float screen_ratio = (float) render_group.m_Width / (float) render_group.m_Height;
     float rg_xmax = render_group.m_XMax;
     float rg_ymax = render_group.m_YMax;
 
