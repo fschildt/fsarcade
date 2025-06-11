@@ -72,7 +72,7 @@ void Tetris::UpdateRunning(SDL_Event &event, float dt) {
             }
         } else if (key == SDLK_X) {
             m_ActiveTetromino.Rotate(1, board_bitmap);
-        } else if (key == SDLK_Z) {
+        } else if (key == SDLK_Z || key == SDLK_Y) {
             m_ActiveTetromino.Rotate(3, board_bitmap);
         } else if (key == SDLK_ESCAPE) {
             m_Paused = true;
