@@ -13,7 +13,7 @@ public:
     void Draw(int32_t level, RenderGroup& render_group);
 
 public:
-    uint16_t m_Bitmap[23];
+    uint16_t m_Bitmap[24];
     uint8_t m_Idmap[20][10];
 };
 

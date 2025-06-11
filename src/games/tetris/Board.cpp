@@ -3,10 +3,10 @@
 #include <games/tetris/Board.hpp>
 
 Board::Board() {
-    for (int y = 0; y < 3; y++) {
+    for (int y = 0; y < 2; y++) {
         m_Bitmap[y] = 0xffff; // 1111111111111111
     }
-    for (int y = 3; y < 23; y++) {
+    for (int y = 2; y < 24; y++) {
         m_Bitmap[y] = 0xe007; // 1110000000000111
     }
 
@@ -39,7 +39,7 @@ void Board::PlaceTetromino(Tetromino tetromino) {
             int32_t bitmap_x = 0x8000 >> (tetromino_bitmap_x + x);
             if (tetromino_bitmap[y] & bitmap_x) {
                 int32_t idmap_x = tetromino_bitmap_x + x - 3;
-                int32_t idmap_y = tetromino_bitmap_y + y - 3;
+                int32_t idmap_y = tetromino_bitmap_y + y - 2;
                 m_Idmap[idmap_y][idmap_x] = tetromino.m_Id;
             }
         }
@@ -50,9 +50,9 @@ int32_t Board::ClearRows(int32_t y0) {
     int32_t rows_cleared = 0;
     int32_t y1 = y0 + 4;
 
-    // ignore for y = {0,1,2}. Those bits are all 1's for collision testing
-    if (y0 < 3) {
-        y0 += 3 - y0;
+    // ignore for y = {0,1}. Those bits are all 1's for collision testing
+    if (y0 < 2) {
+        y0 += 2 - y0;
     }
 
     for (int32_t y = y0; y < y1; y++) {
@@ -62,20 +62,20 @@ int32_t Board::ClearRows(int32_t y0) {
         else {
             m_Bitmap[y-rows_cleared] = m_Bitmap[y];
             for (int32_t x = 0; x < 10; x++) {
-                m_Idmap[y-3-rows_cleared][x] = m_Idmap[y-3][x];
+                m_Idmap[y-2-rows_cleared][x] = m_Idmap[y-2][x];
             }
         }
     }
-    for (int32_t y = y1; y < 23; y++) {
+    for (int32_t y = y1; y < 24; y++) {
         m_Bitmap[y-rows_cleared] = m_Bitmap[y];
         for (int32_t x = 0; x < 10; x++) {
-            m_Idmap[y-3-rows_cleared][x] = m_Idmap[y-3][x];
+            m_Idmap[y-2-rows_cleared][x] = m_Idmap[y-2][x];
         }
     }
-    for (int32_t y = 22-rows_cleared; y < 23; y++) {
+    for (int32_t y = 24-rows_cleared; y < 24; y++) {
         m_Bitmap[y] = 0xe007;
         for (int32_t x = 0; x < 10; x++) {
-            m_Idmap[y-3][x] = TETROMINO_ID_NONE;
+            m_Idmap[y-4][x] = TETROMINO_ID_NONE;
         }
     }
 

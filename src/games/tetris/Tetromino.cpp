@@ -6,45 +6,45 @@
 static const uint16_t s_left_aligned_bitmaps[7][4][4] = {
     {
         // O piece
-        {0x0000, 0x6000, 0x6000, 0x0000}, // orientation 0
-        {0x0000, 0x6000, 0x6000, 0x0000}, // orientation 1
-        {0x0000, 0x6000, 0x6000, 0x0000}, // orientation 2
-        {0x0000, 0x6000, 0x6000, 0x0000}, // orientation 3
+        {0x6000, 0x6000, 0x0000, 0x0000}, // orientation 0
+        {0x6000, 0x6000, 0x0000, 0x0000}, // orientation 1
+        {0x6000, 0x6000, 0x0000, 0x0000}, // orientation 2
+        {0x6000, 0x6000, 0x0000, 0x0000}, // orientation 3
     },
     {
         // S piece
-        {0x0000, 0x6000, 0x3000, 0x0000}, // orientation 0
-        {0x0000, 0x1000, 0x3000, 0x2000}, // orientation 1
-        {0x0000, 0x6000, 0x3000, 0x0000}, // orientation 2
-        {0x0000, 0x1000, 0x3000, 0x2000}, // orientation 3
+        {0x6000, 0x3000, 0x0000, 0x0000}, // orientation 0
+        {0x1000, 0x3000, 0x2000, 0x0000}, // orientation 1
+        {0x6000, 0x3000, 0x0000, 0x0000}, // orientation 2
+        {0x1000, 0x3000, 0x2000, 0x0000}, // orientation 3
     },
     {
         // Z piece
-        {0x0000, 0x3000, 0x6000, 0x0000}, // orientation 0
-        {0x0000, 0x2000, 0x3000, 0x1000}, // orientation 1
-        {0x0000, 0x3000, 0x6000, 0x0000}, // orientation 2
-        {0x0000, 0x2000, 0x3000, 0x1000}, // orientation 3
+        {0x3000, 0x6000, 0x0000, 0x0000}, // orientation 0
+        {0x2000, 0x3000, 0x1000, 0x0000}, // orientation 1
+        {0x3000, 0x6000, 0x0000, 0x0000}, // orientation 2
+        {0x2000, 0x3000, 0x1000, 0x0000}, // orientation 3
     },
     {
         // T piece
-        {0x0000, 0x2000, 0x7000, 0x0000}, // orientation 0
-        {0x0000, 0x2000, 0x6000, 0x2000}, // orientation 1
-        {0x0000, 0x0000, 0x7000, 0x2000}, // orientation 2
-        {0x0000, 0x2000, 0x3000, 0x2000}, // orientation 3
+        {0x2000, 0x7000, 0x0000, 0x0000}, // orientation 0
+        {0x2000, 0x6000, 0x2000, 0x0000}, // orientation 1
+        {0x0000, 0x7000, 0x2000, 0x0000}, // orientation 2
+        {0x2000, 0x3000, 0x2000, 0x0000}, // orientation 3
     },
     {
         // L piece
-        {0x0000, 0x4000, 0x7000, 0x0000}, // orientation 0
-        {0x0000, 0x2000, 0x2000, 0x6000}, // orientation 1
-        {0x0000, 0x0000, 0x7000, 0x1000}, // orientation 2
-        {0x0000, 0x3000, 0x2000, 0x2000}, // orientation 3
+        {0x4000, 0x7000, 0x0000, 0x0000}, // orientation 0
+        {0x2000, 0x2000, 0x6000, 0x0000}, // orientation 1
+        {0x0000, 0x7000, 0x1000, 0x0000}, // orientation 2
+        {0x3000, 0x2000, 0x2000, 0x0000}, // orientation 3
     },
     {
         // J piece
-        {0x0000, 0x1000, 0x7000, 0x0000}, // orientation 0
-        {0x0000, 0x6000, 0x2000, 0x2000}, // orientation 1
-        {0x0000, 0x0000, 0x7000, 0x4000}, // orientation 2
-        {0x0000, 0x2000, 0x2000, 0x3000}, // orientation 3
+        {0x1000, 0x7000, 0x0000, 0x0000}, // orientation 0
+        {0x6000, 0x2000, 0x2000, 0x0000}, // orientation 1
+        {0x0000, 0x7000, 0x4000, 0x0000}, // orientation 2
+        {0x2000, 0x2000, 0x3000, 0x0000}, // orientation 3
     },
     {
         // I piece
@@ -67,8 +67,8 @@ std::mt19937& Tetromino::GetRng() {
 Tetromino::Tetromino() :
         m_Id(s_dist(GetRng())),
         m_Orientation(0),
-        m_X(7),
-        m_Y(19)
+        m_X(6),
+        m_Y(20)
 {
 }
 
@@ -111,7 +111,7 @@ void Tetromino::Draw(int32_t level, RenderGroup& render_group) {
 
     const uint16_t *left_aligned_bitmap = s_left_aligned_bitmaps[m_Id][m_Orientation];
     int8_t x0 = m_X - 3;
-    int8_t y0 = m_Y - 3;
+    int8_t y0 = m_Y - 2;
     float world_pos_x = ((world_width - tetromino_size_with_border*10) / 2.0f) + x0 * tetromino_size_with_border;
     float world_pos_y = y0 * tetromino_size_with_border;
     for (int y = 0; y < 4; y++) {
@@ -149,7 +149,6 @@ void Tetromino::GetBitmap(uint16_t *bitmap) {
     *(uint64_t*)bitmap = *(uint64_t*)&s_left_aligned_bitmaps[m_Id][m_Orientation][0] >> m_X;
 }
 
-// Todo: make a proper colormap
 V3F32 Tetromino::GetColor(uint8_t id, int32_t level) {
     V3F32 color;
     switch (id) {
