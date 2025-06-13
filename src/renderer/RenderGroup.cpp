@@ -24,6 +24,39 @@ void RenderGroup::SetCameraSize(float width, float height) {
     m_CameraHeight = height;
 }
 
+ImVec2 RenderGroup::ViewPosToImguiPos(V2F32 view_pos) {
+    float scale = GetScale();
+    float viewport_width = m_CameraWidth * scale;
+    float viewport_height = m_CameraHeight * scale;
+    float viewport_x0 = (m_ScreenWidth - viewport_width) / 2;
+    float viewport_y0 = (m_ScreenHeight - viewport_height) / 2;
+
+    ImVec2 result = {
+        viewport_x0 + view_pos.x * scale,
+        m_ScreenHeight - (viewport_y0 + view_pos.y * scale)
+    };
+
+    return result;
+}
+
+ImVec2 RenderGroup::ViewDimToImguiDim(V2F32 view_dim) {
+    float scale = GetScale();
+
+    ImVec2 result = {
+        view_dim.x * scale,
+        view_dim.y * scale
+    };
+
+    return result;
+}
+
+float RenderGroup::GetScale() {
+    float xunits = m_ScreenWidth / m_CameraWidth;
+    float yunits = m_ScreenHeight / m_CameraHeight;
+    float scale = std::min(xunits, yunits);
+    return scale;
+}
+
 void RenderGroup::Clear(V3F32 color) {
     m_ClearColor = color;
 }

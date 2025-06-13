@@ -109,34 +109,15 @@ void Tetromino::Draw(int32_t level, RenderGroup& render_group) {
     float tetromino_size = 0.8f * tetromino_size_with_border;
     float tetromino_offset = 0.1f * tetromino_size_with_border;
 
-    const uint16_t *left_aligned_bitmap = s_left_aligned_bitmaps[m_Id][m_Orientation];
     int8_t x0 = m_X - 3;
     int8_t y0 = m_Y - 2;
-    float world_pos_x = ((world_width - tetromino_size_with_border*10) / 2.0f) + x0 * tetromino_size_with_border;
-    float world_pos_y = y0 * tetromino_size_with_border;
-    for (int y = 0; y < 4; y++) {
-        for (int x = 0; x < 4; x++) {
-            if (left_aligned_bitmap[y] & (0x8000 >> x)) {
-                V2F32 local_pos = {
-                    x * tetromino_size_with_border + tetromino_offset,
-                    y * tetromino_size_with_border + tetromino_offset
-                };
-                V2F32 local_dim = {tetromino_size, tetromino_size};
 
+    V2F32 world_pos = {
+        ((world_width - tetromino_size_with_border*10) / 2.0f) + x0 * tetromino_size_with_border,
+        y0 * tetromino_size_with_border
+    };
 
-                V3F32 world_pos = {
-                    world_pos_x + local_pos.x,
-                    world_pos_y + local_pos.y,
-                    1.0f
-                };
-                V2F32 world_dim = local_dim;
-
-
-                V3F32 color = GetColor(m_Id, level);
-                render_group.PushRectangle(world_pos, world_dim, color);
-            }
-        }
-    }
+    Tetromino::Draw(world_pos, m_Id, m_Orientation, 0, 1.0f, render_group);
 }
 
 void Tetromino::GetBitmap(uint16_t *bitmap) {
@@ -164,4 +145,36 @@ V3F32 Tetromino::GetColor(uint8_t id, int32_t level) {
     return color;
 }
 
+void Tetromino::Draw(V2F32 pos, TetrominoId id, int32_t ori, int32_t level, float scale, RenderGroup &render_group) {
+    float world_width = 4.0f;
+    float world_height = 3.0f;
+    float tetromino_size_with_border = scale * world_height / 20.0f;
+    float tetromino_size = 0.8f * tetromino_size_with_border;
+    float tetromino_offset = 0.1f * tetromino_size_with_border;
+
+    const uint16_t *left_aligned_bitmap = s_left_aligned_bitmaps[id][ori];
+    for (int y = 0; y < 4; y++) {
+        for (int x = 0; x < 4; x++) {
+            if (left_aligned_bitmap[y] & (0x8000 >> x)) {
+                V2F32 local_pos = {
+                    x * tetromino_size_with_border + tetromino_offset,
+                    y * tetromino_size_with_border + tetromino_offset
+                };
+                V2F32 local_dim = {tetromino_size, tetromino_size};
+
+
+                V3F32 world_pos = {
+                    pos.x + local_pos.x,
+                    pos.y + local_pos.y,
+                    1.0f
+                };
+                V2F32 world_dim = local_dim;
+
+
+                V3F32 color = GetColor(id, level);
+                render_group.PushRectangle(world_pos, world_dim, color);
+            }
+        }
+    }
+}
 

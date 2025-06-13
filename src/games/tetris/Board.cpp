@@ -23,10 +23,8 @@ void Board::PlaceTetromino(Tetromino tetromino) {
 
 
     // place in Board's Bitmap
-    // Todo: use SIMD?
     uint16_t tetromino_bitmap[4];
     tetromino.GetBitmap(tetromino_bitmap);
-
     m_Bitmap[tetromino_bitmap_y+0] |= tetromino_bitmap[0];
     m_Bitmap[tetromino_bitmap_y+1] |= tetromino_bitmap[1];
     m_Bitmap[tetromino_bitmap_y+2] |= tetromino_bitmap[2];
@@ -109,7 +107,7 @@ void Board::Draw(int32_t level, RenderGroup& render_group) {
     render_group.PushRectangle(bg_world_pos, bg_world_dim, bg_color);
 
 
-    // tetrominos
+    // tetromino parts
     for (size_t y = 0; y < 20; y++) {
         for (size_t x = 0; x < 10; x++) {
             uint8_t tetromino_id = m_Idmap[y][x];

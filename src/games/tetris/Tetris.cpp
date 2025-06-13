@@ -6,16 +6,13 @@
 
 #include <cstdio>
 #include <cstring>
+#include <iterator>
 
 Tetris::Tetris() {
     m_TetrominoCounters[m_ActiveTetromino.m_Id] += 1;
 }
 
 bool Tetris::Update(std::vector<SDL_Event> &events, RenderGroup &render_group) {
-    if (!m_IsInitialized) {
-        m_IsInitialized = true;
-    }
-
     V3F32 clear_color = V3F32(0.2f, 0.2f, 0.2f);
     render_group.SetCameraSize(4.0f, 3.0f);
     render_group.Clear(clear_color);
@@ -48,7 +45,8 @@ bool Tetris::Update(std::vector<SDL_Event> &events, RenderGroup &render_group) {
 
     m_Board.Draw(m_Level, render_group);
     m_ActiveTetromino.Draw(m_Level, render_group);
-    DoImGui();
+    DoImGui(render_group);
+    DrawStatistics(render_group);
 
     return m_Running;
 }
@@ -148,9 +146,15 @@ int32_t Tetris::GetDropCount(float dt) {
     return drop_count;
 }
 
-void Tetris::DoImGui() {
+void Tetris::DoImGui(RenderGroup &render_group) {
     ImGuiIO& io = ImGui::GetIO();
-    ImGuiWindowFlags flags = ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoInputs;
+    ImGuiWindowFlags flags = ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoInputs;
+
+    float scale = render_group.GetScale() * 0.01f;
+    ImVec2 pos_lines          = ImVec2(  0.0f * scale, 100.0f * scale);
+    ImVec2 pos_score          = ImVec2(275.0f * scale, 100.0f * scale);
+    ImVec2 pos_next_tetromino = ImVec2(275.0f * scale, 150.0f * scale);
+    ImVec2 pos_level          = ImVec2(275.0f * scale, 200.0f * scale);
 
 
     uint32_t lines = m_LineCounter > 999999 ? 999999 : m_LineCounter;
@@ -161,21 +165,9 @@ void Tetris::DoImGui() {
         lines = lines / 10;
         r--;
     }
-    ImGui::SetNextWindowPos(ImVec2(160, 50));
+    ImGui::SetNextWindowPos(pos_lines);
     ImGui::Begin("TetrisLines", nullptr, flags);
     ImGui::Text("%s", lines_cstr);
-    ImGui::End();
-
-
-    ImGui::SetNextWindowPos(ImVec2(0, 100));
-    ImGui::Begin("TetrisStatistics", nullptr, flags);
-    ImGui::Text("O Piece = %d", m_TetrominoCounters[TETROMINO_O]);
-    ImGui::Text("S Piece = %d", m_TetrominoCounters[TETROMINO_S]);
-    ImGui::Text("Z Piece = %d", m_TetrominoCounters[TETROMINO_Z]);
-    ImGui::Text("T Piece = %d", m_TetrominoCounters[TETROMINO_T]);
-    ImGui::Text("L Piece = %d", m_TetrominoCounters[TETROMINO_L]);
-    ImGui::Text("J Piece = %d", m_TetrominoCounters[TETROMINO_J]);
-    ImGui::Text("I Piece = %d", m_TetrominoCounters[TETROMINO_I]);
     ImGui::End();
 
 
@@ -187,12 +179,12 @@ void Tetris::DoImGui() {
         score = score / 10;
         r--;
     }
-    ImGui::SetNextWindowPos(ImVec2(250.f, 100.f));
+    ImGui::SetNextWindowPos(pos_score);
     ImGui::Begin("TetrisScore", nullptr, flags);
     ImGui::Text("%s", score_cstr);
     ImGui::End();
 
-    ImGui::SetNextWindowPos(ImVec2(250.f, 150.f));
+    ImGui::SetNextWindowPos(pos_next_tetromino);
     ImGui::Begin("TetrisNextTetromino", nullptr, flags);
     ImGui::Text("Next: %d", m_NextTetromino.m_Id);
     ImGui::End();
@@ -206,7 +198,7 @@ void Tetris::DoImGui() {
         level = level / 10;
         r--;
     }
-    ImGui::SetNextWindowPos(ImVec2(250.f, 200.f));
+    ImGui::SetNextWindowPos(pos_level);
     ImGui::Begin("TetrisLevel", nullptr, flags);
     ImGui::Text("%s", level_cstr);
     ImGui::End();
@@ -222,5 +214,72 @@ void Tetris::DoImGui() {
         }
         ImGui::End();
     }
+}
+
+void Tetris::DrawStatistics(RenderGroup &render_group) {
+    ImGuiIO& io = ImGui::GetIO();
+    ImGuiWindowFlags flags = ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar;
+//    flags |= ImGuiWindowFlags_NoBackground;
+
+    // Todo: change to new font scaling api in imgui first
+
+    float scale = render_group.GetScale();
+    float screen_text_scale = 2.0f * scale / 256.0f; // 256 = 1024/4 and 768/3
+
+    V2F32 view_tetrominoes_pos = {0.4f, 1.6f};
+    V2F32 view_text_pos = view_tetrominoes_pos + V2F32(0.4f, 0.16f);
+    V2F32 view_advance = {0.0f, 0.2f};
+    ImVec2 screen_text_pos = render_group.ViewPosToImguiPos(view_text_pos);
+
+
+    Tetromino::Draw(view_tetrominoes_pos, TETROMINO_T, 0, 0, 0.5f, render_group);
+    view_tetrominoes_pos.y -= view_advance.y;
+
+    Tetromino::Draw(view_tetrominoes_pos, TETROMINO_J, 0, 0, 0.5f, render_group);
+    view_tetrominoes_pos.y -= view_advance.y;
+
+    Tetromino::Draw(view_tetrominoes_pos, TETROMINO_Z, 0, 0, 0.5f, render_group);
+    view_tetrominoes_pos.y -= view_advance.y;
+
+    Tetromino::Draw(view_tetrominoes_pos, TETROMINO_O, 0, 0, 0.5f, render_group);
+    view_tetrominoes_pos.y -= view_advance.y;
+
+    Tetromino::Draw(view_tetrominoes_pos, TETROMINO_S, 0, 0, 0.5f, render_group);
+    view_tetrominoes_pos.y -= view_advance.y;
+
+    Tetromino::Draw(view_tetrominoes_pos, TETROMINO_L, 0, 0, 0.5f, render_group);
+    view_tetrominoes_pos.y -= view_advance.y;
+
+    Tetromino::Draw(view_tetrominoes_pos, TETROMINO_I, 0, 0, 0.5f, render_group);
+    view_tetrominoes_pos.y -= view_advance.y;
+
+
+    ImGui::SetNextWindowPos(screen_text_pos);
+    ImGui::Begin("TetrisStatistics", nullptr, flags);
+    ImGui::SetWindowFontScale(screen_text_scale);
+
+    float screen_text_line_height = ImGui::GetTextLineHeight();
+    ImVec2 screen_gap = render_group.ViewDimToImguiDim(view_advance);
+    ImVec2 screen_text_gap = {
+        screen_gap.x,
+        screen_gap.y - screen_text_line_height
+    };
+
+    ImGui::Text("%d", m_TetrominoCounters[TETROMINO_T]);
+    ImGui::Dummy(screen_text_gap);
+    ImGui::Text("%d", m_TetrominoCounters[TETROMINO_J]);
+    ImGui::Dummy(screen_text_gap);
+    ImGui::Text("%d", m_TetrominoCounters[TETROMINO_Z]);
+    ImGui::Dummy(screen_text_gap);
+    ImGui::Text("%d", m_TetrominoCounters[TETROMINO_O]);
+    ImGui::Dummy(screen_text_gap);
+    ImGui::Text("%d", m_TetrominoCounters[TETROMINO_S]);
+    ImGui::Dummy(screen_text_gap);
+    ImGui::Text("%d", m_TetrominoCounters[TETROMINO_L]);
+    ImGui::Dummy(screen_text_gap);
+    ImGui::Text("%d", m_TetrominoCounters[TETROMINO_I]);
+    ImGui::Dummy(screen_text_gap);
+
+    ImGui::End();
 }
 

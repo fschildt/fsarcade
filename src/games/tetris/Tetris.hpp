@@ -17,14 +17,14 @@ private:
     void UpdatePaused(SDL_Event &event);
 
     int32_t GetDropCount(float dt);
-    void DoImGui();
+    void DoImGui(RenderGroup &render_group);
+    void DrawStatistics(RenderGroup &render_group);
 
 private:
-    bool m_IsInitialized = false;
     bool m_Paused = false;
     bool m_Running = true;
 
-    float m_DtRemaining = 0.f;
+    float m_DtRemaining = 0.0f;
     uint64_t m_TLast = SDL_GetTicks();
 
     Tetromino m_ActiveTetromino;

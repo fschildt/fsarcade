@@ -3,6 +3,7 @@
 #include <basic/defs.hpp>
 #include <basic/math.hpp>
 #include <vector>
+#include <imgui.h>
 
 enum REntityType : int32_t {
     REntityType_Rectangle,
@@ -44,6 +45,11 @@ public:
     void Clear(V3F32 color);
     void Reset();
     void Sort();
+
+    ImVec2 ViewPosToImguiPos(V2F32 view_pos);
+    ImVec2 ViewDimToImguiDim(V2F32 view_dim);
+    float GetScale();
+
 
 public:
     void PushRectangle(V3F32 pos, V2F32 dim, V3F32 color);

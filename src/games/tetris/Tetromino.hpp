@@ -27,7 +27,10 @@ public:
     void Draw(int32_t level, RenderGroup& render_group);
     bool CollidesWithBoard(uint16_t *board_bitmap, int32_t id, int32_t orientation, int32_t x, int32_t y);
 
+
+public:
     static V3F32 GetColor(uint8_t id, int32_t level);
+    static void Draw(V2F32 pos, TetrominoId id, int32_t ori, int32_t level, float scale, RenderGroup &render_group);
 
 
 private:
@@ -35,7 +38,7 @@ private:
 
 
 public:
-    int32_t m_Id;
+    TetrominoId m_Id;
     int32_t m_Orientation;
     int32_t m_X;
     int32_t m_Y;

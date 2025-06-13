@@ -97,9 +97,7 @@ void GlRenderer::Draw(RenderGroup& render_group) {
 
 
     // viewport space
-    float xunits = screen_width / camera_width;
-    float yunits = screen_height / camera_height;
-    float scale = std::min(xunits, yunits);
+    float scale = render_group.GetScale();
     float viewport_width = camera_width * scale;
     float viewport_height = camera_height * scale;
     float viewport_x0 = (screen_width - viewport_width) / 2;
@@ -145,29 +143,23 @@ void GlRenderer::DrawBatch() {
     int text_index_count = m_TextIndexBuffer.GetCount();
 
     if (rectangle_index_count) {
-        // setup
         m_RectangleVertexBuffer.TransferData();
         m_RectangleIndexBuffer.TransferData();
         m_RectangleShader.UseProgram();
 
-        // draw
         glDrawElements(GL_TRIANGLES, rectangle_index_count, GL_UNSIGNED_INT, 0);
 
-        // reset
         m_RectangleVertexBuffer.Reset();
         m_RectangleIndexBuffer.Reset();
     }
     
     if (text_index_count) {
-        // setup
         m_TextVertexBuffer.TransferData();
         m_TextIndexBuffer.TransferData();
         m_TextShader.UseProgram();
 
-        // draw
         glDrawElements(GL_TRIANGLES, text_index_count, GL_UNSIGNED_INT, 0);
 
-        // reset
         m_TextVertexBuffer.Reset();
         m_TextIndexBuffer.Reset();
     }
