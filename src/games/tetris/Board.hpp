@@ -14,6 +14,6 @@ public:
 
 public:
     uint16_t m_Bitmap[24];
-    uint8_t m_Idmap[20][10];
+    uint8_t m_Idmap[22][10];
 };
 

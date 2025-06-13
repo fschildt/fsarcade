@@ -10,7 +10,7 @@ Board::Board() {
         m_Bitmap[y] = 0xe007; // 1110000000000111
     }
 
-    for (int y = 0; y < 20; y++) {
+    for (int y = 0; y < 22; y++) {
         for (int x = 0; x < 10; x++) {
             m_Idmap[y][x] = TETROMINO_ID_NONE;
         }
@@ -73,7 +73,7 @@ int32_t Board::ClearRows(int32_t y0) {
     for (int32_t y = 24-rows_cleared; y < 24; y++) {
         m_Bitmap[y] = 0xe007;
         for (int32_t x = 0; x < 10; x++) {
-            m_Idmap[y-4][x] = TETROMINO_ID_NONE;
+            m_Idmap[y-2][x] = TETROMINO_ID_NONE;
         }
     }
 
