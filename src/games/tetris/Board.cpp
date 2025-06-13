@@ -99,7 +99,7 @@ void Board::Draw(int32_t level, RenderGroup& render_group) {
     V3F32 bg_world_pos = {
         board_world_pos.x,
         board_world_pos.y,
-        1.0f
+        0.0f
     };
     V2F32 bg_world_dim = {
         tetromino_size_with_border * 10,
@@ -114,7 +114,6 @@ void Board::Draw(int32_t level, RenderGroup& render_group) {
         for (size_t x = 0; x < 10; x++) {
             uint8_t tetromino_id = m_Idmap[y][x];
             if (tetromino_id < TETROMINO_ID_COUNT) {
-                // local space
                 V2F32 local_pos = {
                     x * tetromino_size_with_border + tetromino_offset,
                     y * tetromino_size_with_border + tetromino_offset
@@ -122,17 +121,12 @@ void Board::Draw(int32_t level, RenderGroup& render_group) {
                 V2F32 local_dim = {tetromino_size, tetromino_size};
 
 
-                // world space
                 V3F32 world_pos = {
                     board_world_pos.x + local_pos.x,
                     board_world_pos.y + local_pos.y,
-                    2.0f
+                    1.0f
                 };
                 V2F32 world_dim = local_dim;
-
-
-                // Todo: view space
-                // Todo: clip space
 
 
                 V3F32 color = Tetromino::GetColor(tetromino_id, level);

@@ -5,14 +5,8 @@
 #include <vector>
 
 enum REntityType : int32_t {
-    REntityType_Clear,
     REntityType_Rectangle,
     REntityType_Bitmap,
-};
-
-struct REntity_Clear {
-    REntityType type;
-    V3F32 color;
 };
 
 struct REntity_Rectangle {
@@ -32,7 +26,6 @@ struct REntity_Bitmap {
 
 union REntity {
     REntityType type;
-    REntity_Clear clear;
     REntity_Rectangle rect;
     REntity_Bitmap bitmap;
 };
@@ -47,25 +40,28 @@ struct RSortEntry {
 class RenderGroup {
 public:
     RenderGroup();
-    void SetSize(float width, float height);
+    void SetCameraSize(float width, float height);
+    void Clear(V3F32 color);
     void Reset();
     void Sort();
 
 public:
-    void PushClear(V3F32 color);
     void PushRectangle(V3F32 pos, V2F32 dim, V3F32 color);
     void PushBitmap(V3F32 pos, int32_t width, int32_t height, void *bitmap);
 
 public:
-    int32_t m_Width;
-    int32_t m_Height;
+    int32_t m_ScreenWidth;
+    int32_t m_ScreenHeight;
 
 private:
     friend class GlRenderer;
 
 
-    float m_XMax;
-    float m_YMax;
+    float m_CameraWidth;
+    float m_CameraHeight;
+
+
+    V3F32 m_ClearColor;
 
     std::vector<REntity> m_REntities;
     std::vector<RSortEntry> m_RSortEntries;

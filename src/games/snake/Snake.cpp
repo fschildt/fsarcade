@@ -42,8 +42,8 @@ bool Snake::Update(std::vector<SDL_Event> &events, RenderGroup &render_group) {
 
 
     V3F32 clear_color = V3F32(0.3f, 0.3f, 0.3f);
-    render_group.SetSize(4.0f, 3.0f);
-    render_group.PushClear(clear_color);
+    render_group.SetCameraSize(4.0f, 3.0f);
+    render_group.Clear(clear_color);
 
 
     for (SDL_Event &event : events) {
@@ -262,7 +262,7 @@ void Snake::Draw(RenderGroup &render_group) {
 
 
     /* draw map background */
-    V3F32 map_world_pos = {map_x, map_y, 1.0f};
+    V3F32 map_world_pos = {map_x, map_y, 0.0f};
     V2F32 map_world_dim = {map_width, map_height};
     V3F32 bg_color = {0.0f, 0.0f, 0.0f};
     render_group.PushRectangle(map_world_pos, map_world_dim, bg_color);
@@ -276,14 +276,14 @@ void Snake::Draw(RenderGroup &render_group) {
             V3F32 local_pos = {
                 m_BodyPositions[tail].x * tile_size + bodypart_offset,
                 m_BodyPositions[tail].y * tile_size + bodypart_offset,
-                2.0f
+                1.0f
             };
             V2F32 local_dim = {bodypart_size, bodypart_size};
 
             V3F32 world_pos = {
                 map_world_pos.x + local_pos.x,
                 map_world_pos.y + local_pos.y,
-                2.0f
+                1.0f
             };
             V2F32 world_dim = local_dim;
 
@@ -298,14 +298,14 @@ void Snake::Draw(RenderGroup &render_group) {
         V3F32 local_pos = {
             m_BodyPositions[tail].x * tile_size + bodypart_offset,
             m_BodyPositions[tail].y * tile_size + bodypart_offset,
-            2.0f
+            1.0f
         };
         V2F32 local_dim = {bodypart_size, bodypart_size};
 
         V3F32 world_pos = {
             map_world_pos.x + local_pos.x,
             map_world_pos.y + local_pos.y,
-            2.0f
+            1.0f
         };
         V2F32 world_dim = local_dim;
 
@@ -319,7 +319,7 @@ void Snake::Draw(RenderGroup &render_group) {
     V3F32 pos = {
         map_world_pos.x + m_FoodPosition.x * tile_size + bodypart_offset,
         map_world_pos.y + m_FoodPosition.y * tile_size + bodypart_offset,
-        2.0f
+        1.0f
     };
     V2F32 dim = {bodypart_size, bodypart_size};
     V3F32 color = {0.3f, 0.6f, 0.4f};

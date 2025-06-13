@@ -80,42 +80,48 @@ bool GlRenderer::Init() {
 }
 
 void GlRenderer::Draw(RenderGroup& render_group) {
-    glViewport(0, 0, render_group.m_Width, render_group.m_Height);
     render_group.Sort();
 
-    // find values which allows us to scale and center properly
-    float rg_xmax = render_group.m_XMax;
-    float rg_ymax = render_group.m_YMax;
+    float screen_width = render_group.m_ScreenWidth;
+    float screen_height = render_group.m_ScreenHeight;
+    float camera_width = render_group.m_CameraWidth;
+    float camera_height = render_group.m_CameraHeight;
+
+
+    glViewport(0, 0, render_group.m_ScreenWidth, render_group.m_ScreenHeight);
+    glClearColor(render_group.m_ClearColor.r,
+                 render_group.m_ClearColor.g,
+                 render_group.m_ClearColor.b,
+                 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+
+    // viewport space
+    float xunits = screen_width / camera_width;
+    float yunits = screen_height / camera_height;
+    float scale = std::min(xunits, yunits);
+    float viewport_width = camera_width * scale;
+    float viewport_height = camera_height * scale;
+    float viewport_x0 = (screen_width - viewport_width) / 2;
+    float viewport_y0 = (screen_height - viewport_height) / 2;
+    glViewport(viewport_x0, viewport_y0, viewport_width, viewport_height);
+
 
     // draw batches
-    float last_z = -2;
+    float last_z = -1;
     for (auto [z, entity_index] : render_group.m_RSortEntries) {
         REntity& render_entity = render_group.m_REntities[entity_index];
         switch (render_entity.type) {
-            case REntityType_Clear: {
-                REntity_Clear& clear = render_entity.clear;
-                glClearColor(clear.color.r, clear.color.g, clear.color.b, 1.f);
-                glClear(GL_COLOR_BUFFER_BIT);
-                last_z = -1;
-            } break;
-
             case REntityType_Rectangle: {
-                REntity_Rectangle& rect = render_entity.rect;
-                if (rect.pos.z > last_z && last_z >= 0.f) {
-                    DrawBatch();
-                    last_z = rect.pos.z;
-                }
+                // clip space (from camera space to [-1, 1] for pos and [0, 2] for dim)
+                V3F32 pos = render_entity.rect.pos;
+                V2F32 dim = render_entity.rect.dim;
+                pos.x = 2*(pos.x / camera_width) - 1;
+                pos.y = 2*(pos.y / camera_height) - 1;
+                dim.x = 2*(dim.x / camera_width);
+                dim.y = 2*(dim.y / camera_height);
 
-                // convert pos from [0, rg_max] to [-1, 1]
-                // convert dim from [0, rg_max] to [ 0, 2]
-                V3F32 pos = rect.pos;
-                V2F32 dim = rect.dim;
-                pos.x = 2*(rect.pos.x / rg_xmax) - 1;
-                pos.y = 2*(rect.pos.y / rg_ymax) - 1;
-                dim.x = 2*(rect.dim.x / rg_xmax);
-                dim.y = 2*(rect.dim.y / rg_ymax);
-
-                m_RectangleVertexBuffer.PushRectangle(pos, dim, rect.color);
+                m_RectangleVertexBuffer.PushRectangle(pos, dim, render_entity.rect.color);
                 m_RectangleIndexBuffer.PushRectangle();
             }
 

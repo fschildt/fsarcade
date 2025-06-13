@@ -40,8 +40,8 @@ do_menu(RenderGroup &render_group)
 
 
     V3F32 clear_color = V3F32(0.4f, 0.4f, 0.4f);
-    render_group.SetSize(10.0f, 20.0f);
-    render_group.PushClear(clear_color);
+    render_group.SetCameraSize(4.0f, 3.0f);
+    render_group.Clear(clear_color);
 
 
     return type;
@@ -103,7 +103,7 @@ main(int argc, char **argv)
     }
 
     RenderGroup render_group;
-    SDL_GetWindowSize(window, &render_group.m_Width, &render_group.m_Height);
+    SDL_GetWindowSize(window, &render_group.m_ScreenWidth, &render_group.m_ScreenHeight);
 
 
     std::vector<SDL_Event> game_events;
@@ -137,8 +137,8 @@ main(int argc, char **argv)
 
         int w, h;
         SDL_GetWindowSize(window, &w, &h);
-        render_group.m_Width = w;
-        render_group.m_Height = h;
+        render_group.m_ScreenWidth = w;
+        render_group.m_ScreenHeight = h;
 
 
         if (game) {

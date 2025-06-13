@@ -117,7 +117,6 @@ void Tetromino::Draw(int32_t level, RenderGroup& render_group) {
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++) {
             if (left_aligned_bitmap[y] & (0x8000 >> x)) {
-                // local space
                 V2F32 local_pos = {
                     x * tetromino_size_with_border + tetromino_offset,
                     y * tetromino_size_with_border + tetromino_offset
@@ -125,17 +124,12 @@ void Tetromino::Draw(int32_t level, RenderGroup& render_group) {
                 V2F32 local_dim = {tetromino_size, tetromino_size};
 
 
-                // world space
                 V3F32 world_pos = {
                     world_pos_x + local_pos.x,
                     world_pos_y + local_pos.y,
                     1.0f
                 };
                 V2F32 world_dim = local_dim;
-
-
-                // Todo: view space
-                // Todo: clip space
 
 
                 V3F32 color = GetColor(m_Id, level);

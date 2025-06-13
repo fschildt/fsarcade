@@ -11,22 +11,21 @@ RenderGroup::RenderGroup() {
 }
 
 void RenderGroup::Reset() {
-    m_XMax = 0;
-    m_YMax = 0;
+    m_CameraWidth = 0;
+    m_CameraHeight = 0;
     m_REntities.clear();
     m_RSortEntries.clear();
     m_REntities.reserve(1024);
     m_RSortEntries.reserve(1024);
 }
 
-void RenderGroup::SetSize(float width, float height) {
-    m_XMax = width;
-    m_YMax = height;
+void RenderGroup::SetCameraSize(float width, float height) {
+    m_CameraWidth = width;
+    m_CameraHeight = height;
 }
 
-void RenderGroup::PushClear(V3F32 color) {
-    m_REntities.emplace_back(REntity{.clear{.type = REntityType_Clear, .color = color}});
-    m_RSortEntries.emplace_back(-1, m_REntities.size()-1);
+void RenderGroup::Clear(V3F32 color) {
+    m_ClearColor = color;
 }
 
 void RenderGroup::PushRectangle(V3F32 pos, V2F32 dim, V3F32 color) {
