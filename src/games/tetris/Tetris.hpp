@@ -1,5 +1,6 @@
 #pragma once
 
+#include "imgui.h"
 #include <games/Game.hpp>
 #include <games/tetris/Tetromino.hpp>
 #include <games/tetris/Board.hpp>
@@ -17,8 +18,17 @@ private:
     void UpdatePaused(SDL_Event &event);
 
     int32_t GetDropCount(float dt);
-    void DoImGui(RenderGroup &render_group);
+
+
+    void DrawLineCounter(RenderGroup &render_group);
     void DrawStatistics(RenderGroup &render_group);
+
+    void DrawScore(RenderGroup &render_group);
+    void DrawNextTetromino(RenderGroup &render_group);
+    void DrawLevel(RenderGroup &render_group);
+
+    void DrawPauseMenu(RenderGroup &render_group);
+
 
 private:
     bool m_Paused = false;
@@ -37,6 +47,8 @@ private:
     uint32_t m_StartingLevel = 0;
     uint32_t m_Level = 0;
     uint32_t m_SoftdropCounter = 0;
+
+    ImGuiWindowFlags m_ImGuiWindowFlags = ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoScrollbar;
 };
 
 
