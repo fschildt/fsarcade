@@ -36,6 +36,9 @@ do_menu(RenderGroup &render_group)
     if (ImGui::Button("Snake")) {
         type = Game::SNAKE;
     }
+    if (ImGui::Button("Minesweeper")) {
+        type = Game::MINESWEEPER;
+    }
     ImGui::End();
 
 
@@ -119,7 +122,9 @@ main(int argc, char **argv)
 
         SDL_Event event;
         while (cur_game_events < max_game_events && SDL_PollEvent(&event)) {
-            if (event.type == SDL_EVENT_KEY_DOWN) {
+            if (event.type == SDL_EVENT_KEY_DOWN ||
+                event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
+            {
                 game_events.emplace_back(event);
                 cur_game_events++;
             }

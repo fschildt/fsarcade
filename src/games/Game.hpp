@@ -13,7 +13,8 @@ public:
     enum GameType {
         NO_GAME,
         TETRIS,
-        SNAKE
+        SNAKE,
+        MINESWEEPER
     };
 
     Game() = default;

@@ -10,6 +10,10 @@ union V2ST {
         size_t x;
         size_t y;
     };
+
+    bool operator==(const V2ST& other) const {
+        return x == other.x && y == other.y;
+    }
 };
 
 union V2F32 {

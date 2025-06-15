@@ -2,6 +2,7 @@
 #include <games/Game.hpp>
 #include <games/tetris/Tetris.hpp>
 #include <games/snake/Snake.hpp>
+#include <games/minesweeper/Minesweeper.hpp>
 
 #include <assert.h>
 #include <memory>
@@ -21,6 +22,10 @@ Game::Select(GameType type)
 
         case SNAKE: {
             return std::make_unique<Snake>();
+        } break;
+
+        case MINESWEEPER: {
+            return std::make_unique<Minesweeper>();
         } break;
 
         InvalidDefaultCase;
