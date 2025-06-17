@@ -64,7 +64,7 @@ V4F32::V4F32(float x, float y, float z, float w) {
     this->x = x;
     this->y = y;
     this->z = z;
-    this->z = z;
+    this->w = w;
 }
 
 V4F32 V4F32::operator/(float scalar) {

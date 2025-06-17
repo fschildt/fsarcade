@@ -25,7 +25,6 @@ do_menu(RenderGroup &render_group)
 {
     Game::GameType type = Game::NO_GAME;
 
-    ImGuiIO& io = ImGui::GetIO();
     //ImGuiWindowFlags flags = ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
     ImGuiWindowFlags flags = 0;
 

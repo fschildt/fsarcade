@@ -106,8 +106,6 @@ void Tetromino::Draw(int32_t level, RenderGroup& render_group) {
     float world_width = 4.0f;
     float world_height = 3.0f;
     float tetromino_size_with_border = world_height / 20.0f;
-    float tetromino_size = 0.8f * tetromino_size_with_border;
-    float tetromino_offset = 0.1f * tetromino_size_with_border;
 
     int8_t x0 = m_X - 3;
     int8_t y0 = m_Y - 2;
@@ -146,7 +144,6 @@ V3F32 Tetromino::GetColor(uint8_t id, int32_t level) {
 }
 
 void Tetromino::Draw(V2F32 pos, TetrominoId id, int32_t ori, int32_t level, float scale, RenderGroup &render_group) {
-    float world_width = 4.0f;
     float world_height = 3.0f;
     float tetromino_size_with_border = scale * world_height / 20.0f;
     float tetromino_size = 0.8f * tetromino_size_with_border;

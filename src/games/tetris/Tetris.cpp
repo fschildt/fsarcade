@@ -164,8 +164,6 @@ void Tetris::DrawPauseMenu(RenderGroup &render_group) {
 }
 
 void Tetris::DrawLineCounter(RenderGroup &render_group) {
-    ImGuiIO& io = ImGui::GetIO();
-
     V2F32 view_pos = {0.5f, 2.6f};
     ImVec2 screen_pos = render_group.ViewPosToImguiPos(view_pos);
 
@@ -176,9 +174,6 @@ void Tetris::DrawLineCounter(RenderGroup &render_group) {
 }
 
 void Tetris::DrawStatistics(RenderGroup &render_group) {
-    ImGuiIO& io = ImGui::GetIO();
-
-
     V2F32 view_tetrominoes_pos = {0.4f, 1.8f};
     V2F32 view_advance = {0.0f, 0.2f};
 
@@ -241,8 +236,6 @@ void Tetris::DrawStatistics(RenderGroup &render_group) {
 }
 
 void Tetris::DrawScore(RenderGroup &render_group) {
-    ImGuiIO& io = ImGui::GetIO();
-
     V2F32 view_pos = {3.0f, 2.2f};
     ImVec2 screen_pos = render_group.ViewPosToImguiPos(view_pos);
 
@@ -254,8 +247,6 @@ void Tetris::DrawScore(RenderGroup &render_group) {
 }
 
 void Tetris::DrawNextTetromino(RenderGroup &render_group) {
-    ImGuiIO& io = ImGui::GetIO();
-
     V2F32 text_view_pos = {3.0f, 1.8f};
     ImVec2 text_screen_pos = render_group.ViewPosToImguiPos(text_view_pos);
 
@@ -270,9 +261,6 @@ void Tetris::DrawNextTetromino(RenderGroup &render_group) {
 }
 
 void Tetris::DrawLevel(RenderGroup &render_group) {
-    ImGuiIO& io = ImGui::GetIO();
-    ImGuiWindowFlags flags = ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoInputs;
-
     V2F32 view_pos = {3.0f, 1.2f};
     ImVec2 screen_pos = render_group.ViewPosToImguiPos(view_pos);
 

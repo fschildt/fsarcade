@@ -193,7 +193,7 @@ void Snake::ProcessEventDuringResume(SDL_Event &event) {
 }
 
 void Snake::SpawnFood() {
-    uint32_t bit0_counts[m_MapHeight];
+    uint32_t bit0_counts[MAX_MAP_HEIGHT];
     uint32_t bit0_count_total = 0;
 
     // count bits

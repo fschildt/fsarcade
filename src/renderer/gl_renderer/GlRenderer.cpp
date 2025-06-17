@@ -89,9 +89,9 @@ void GlRenderer::Draw(RenderGroup& render_group) {
 
 
     glViewport(0, 0, render_group.m_ScreenWidth, render_group.m_ScreenHeight);
-    glClearColor(render_group.m_ClearColor.r,
-                 render_group.m_ClearColor.g,
-                 render_group.m_ClearColor.b,
+    glClearColor(render_group.m_ClearColor.x,
+                 render_group.m_ClearColor.y,
+                 render_group.m_ClearColor.z,
                  1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -119,6 +119,11 @@ void GlRenderer::Draw(RenderGroup& render_group) {
                 dim.x = 2*(dim.x / camera_width);
                 dim.y = 2*(dim.y / camera_height);
 
+                if (render_entity.rect.pos.z > last_z) {
+                    DrawBatch();
+                    last_z = z;
+                }
+
                 m_RectangleVertexBuffer.PushRectangle(pos, dim, render_entity.rect.color);
                 m_RectangleIndexBuffer.PushRectangle();
             }
@@ -129,7 +134,6 @@ void GlRenderer::Draw(RenderGroup& render_group) {
             InvalidDefaultCase;
         }
     }
-
 
     DrawBatch();
 }

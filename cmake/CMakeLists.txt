@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.20)
 
 set(CMAKE_CXX_COMPILER clang++)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # set binary directory
 set(FSARCADE_ROOT_DIR    "${CMAKE_CURRENT_LIST_DIR}/..")
@@ -12,6 +15,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/..)
 project(fsarcade)
 
 add_executable(fsarcade)
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(fsarcade PRIVATE -Wall -pedantic-errors -Werror)
+endif ()
 target_sources(fsarcade PUBLIC
     ${FSARCADE_SRC_DIR}/main.cpp
     ${FSARCADE_SRC_DIR}/basic/math.cpp
