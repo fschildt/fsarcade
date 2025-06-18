@@ -8,7 +8,7 @@
 
 class Snake : public Game {
 public:
-    enum Direction {
+    enum Direction : int32_t {
         DIRECTION_UP,
         DIRECTION_DOWN,
         DIRECTION_LEFT,
@@ -34,26 +34,26 @@ private:
 
 
 private:
-    static constexpr size_t MAX_MAP_WIDTH = 16;
-    static constexpr size_t MAX_MAP_HEIGHT = 16;
+    static constexpr int32_t MAX_MAP_WIDTH = 16;
+    static constexpr int32_t MAX_MAP_HEIGHT = 16;
 
     bool m_IsPaused;
     bool m_IsRunning;
 
     float m_DtInSecondsRemaining;
-    float m_LastMillisecondsSinceT0;
+    uint64_t m_LastMillisecondsSinceT0;
 
     float m_TilesPerSecond;
     Direction m_Direction;
     Direction m_LastAdvancedDirection;
 
-    size_t m_MapWidth;
-    size_t m_MapHeight;
-    size_t m_Tail;
-    size_t m_Head;
+    int32_t m_MapWidth;
+    int32_t m_MapHeight;
+    int32_t m_Tail;
+    int32_t m_Head;
     uint64_t m_BodyBitmap[MAX_MAP_HEIGHT];
-    V2ST m_BodyPositions[MAX_MAP_WIDTH * MAX_MAP_HEIGHT];
-    V2ST m_FoodPosition;
+    V2I32 m_BodyPositions[MAX_MAP_WIDTH * MAX_MAP_HEIGHT];
+    V2I32 m_FoodPosition;
 
     std::mt19937 m_Rng;
     std::uniform_int_distribution<int32_t> m_Dist;

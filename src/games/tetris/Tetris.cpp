@@ -16,13 +16,15 @@ bool Tetris::Update(std::vector<SDL_Event> &events, RenderGroup &render_group) {
     render_group.SetCameraSize(4.0f, 3.0f);
     render_group.Clear(clear_color);
 
-    uint64_t tnow = SDL_GetTicks();
-    float dt = (tnow - m_TLast) / 1000.f;
-    m_TLast = tnow;
+    uint64_t milliseconds_since_t0 = SDL_GetTicks();
+    uint64_t milliseconds_since_t0_last = m_MillisecondsSinceT0Last;
+    uint64_t milliseconds_dt = milliseconds_since_t0 - milliseconds_since_t0_last;
+    float seconds_dt = static_cast<float>(milliseconds_dt) / 1000.0f;
+    m_MillisecondsSinceT0Last = milliseconds_since_t0;
 
 
     if (!m_Paused) {
-        uint32_t drop_count = GetDropCount(dt);
+        uint32_t drop_count = GetDropCount(seconds_dt);
         while (drop_count) {
             bool moved_down = m_ActiveTetromino.MoveDown(m_Board.m_Bitmap);
             if (!moved_down) {
@@ -38,7 +40,7 @@ bool Tetris::Update(std::vector<SDL_Event> &events, RenderGroup &render_group) {
             UpdatePaused(event);
         }
         else {
-            UpdateRunning(event, dt);
+            UpdateRunning(event, seconds_dt);
         }
     }
 
@@ -127,10 +129,10 @@ void Tetris::HandleTetrominoPlacement() {
     m_Level = m_StartingLevel + m_LineCounter / 10;
 }
 
-int32_t Tetris::GetDropCount(float dt) {
+uint32_t Tetris::GetDropCount(float dt) {
     float nes_frame_time = 1.0f / 60;
-    int nes_frames_per_cell;
-    if (m_Level <= 8)       nes_frames_per_cell = 48 - m_Level * 5;
+    int32_t nes_frames_per_cell;
+    if      (m_Level <= 8)  nes_frames_per_cell = 48 - m_Level * 5;
     else if (m_Level == 9)  nes_frames_per_cell = 6;
     else if (m_Level <= 12) nes_frames_per_cell = 5;
     else if (m_Level <= 15) nes_frames_per_cell = 4;
@@ -139,16 +141,16 @@ int32_t Tetris::GetDropCount(float dt) {
     else                    nes_frames_per_cell = 1;
 
 
-    float dt_level = nes_frames_per_cell * nes_frame_time;
-    float dt_total = m_DtRemaining + dt;
+    float dt_level = static_cast<float>(nes_frames_per_cell) * nes_frame_time;
+    float dt_total = m_DtInSecondsRemaining + dt;
 
-    int32_t drop_count = 0;
+    uint32_t drop_count = 0;
     while (dt_total > dt_level + 0.00000001) {
         drop_count += 1;
         dt_total -= dt_level;
     }
 
-    m_DtRemaining = dt_total;
+    m_DtInSecondsRemaining = dt_total;
     return drop_count;
 }
 
@@ -165,7 +167,7 @@ void Tetris::DrawPauseMenu(RenderGroup &render_group) {
 
 void Tetris::DrawLineCounter(RenderGroup &render_group) {
     V2F32 view_pos = {0.5f, 2.6f};
-    ImVec2 screen_pos = render_group.ViewPosToImguiPos(view_pos);
+    ImVec2 screen_pos = render_group.ViewPosToScreenPosImGui(view_pos);
 
     ImGui::SetNextWindowPos(screen_pos);
     ImGui::Begin("TetrisLines", nullptr, m_ImGuiWindowFlags);
@@ -178,12 +180,12 @@ void Tetris::DrawStatistics(RenderGroup &render_group) {
     V2F32 view_advance = {0.0f, 0.2f};
 
     V2F32 view_text_title_pos = view_tetrominoes_pos + V2F32(0.02f, 0.4f);
-    ImVec2 screen_text_title_pos = render_group.ViewPosToImguiPos(view_text_title_pos);
+    ImVec2 screen_text_title_pos = render_group.ViewPosToScreenPosImGui(view_text_title_pos);
 
     V2F32 view_text_pos = view_tetrominoes_pos + V2F32(0.4f, 0.16f);
     V2F32 view_text_gap = {0.0f, 0.124f};
-    ImVec2 screen_text_pos = render_group.ViewPosToImguiPos(view_text_pos);
-    ImVec2 screen_text_gap = render_group.ViewDimToImguiDim(view_text_gap);
+    ImVec2 screen_text_pos = render_group.ViewPosToScreenPosImGui(view_text_pos);
+    ImVec2 screen_text_gap = render_group.ViewSizeToScreenSizeImGui(view_text_gap);
 
 
     Tetromino::Draw(view_tetrominoes_pos, TETROMINO_T, 0, 0, 0.5f, render_group);
@@ -237,7 +239,7 @@ void Tetris::DrawStatistics(RenderGroup &render_group) {
 
 void Tetris::DrawScore(RenderGroup &render_group) {
     V2F32 view_pos = {3.0f, 2.2f};
-    ImVec2 screen_pos = render_group.ViewPosToImguiPos(view_pos);
+    ImVec2 screen_pos = render_group.ViewPosToScreenPosImGui(view_pos);
 
     ImGui::SetNextWindowPos(screen_pos);
     ImGui::Begin("TetrisScore", nullptr, m_ImGuiWindowFlags);
@@ -248,7 +250,7 @@ void Tetris::DrawScore(RenderGroup &render_group) {
 
 void Tetris::DrawNextTetromino(RenderGroup &render_group) {
     V2F32 text_view_pos = {3.0f, 1.8f};
-    ImVec2 text_screen_pos = render_group.ViewPosToImguiPos(text_view_pos);
+    ImVec2 text_screen_pos = render_group.ViewPosToScreenPosImGui(text_view_pos);
 
     ImGui::SetNextWindowPos(text_screen_pos);
     ImGui::Begin("TetrisNextTetromino", nullptr, m_ImGuiWindowFlags);
@@ -262,7 +264,7 @@ void Tetris::DrawNextTetromino(RenderGroup &render_group) {
 
 void Tetris::DrawLevel(RenderGroup &render_group) {
     V2F32 view_pos = {3.0f, 1.2f};
-    ImVec2 screen_pos = render_group.ViewPosToImguiPos(view_pos);
+    ImVec2 screen_pos = render_group.ViewPosToScreenPosImGui(view_pos);
 
     ImGui::SetNextWindowPos(screen_pos);
     ImGui::Begin("TetrisLevel", nullptr, m_ImGuiWindowFlags);

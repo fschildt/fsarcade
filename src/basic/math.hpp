@@ -8,6 +8,7 @@ struct V2ST {
 
     V2ST() = default;
     V2ST(size_t x, size_t y);
+    V2ST(int32_t x, int32_t y);
     bool operator==(V2ST &b);
     bool operator==(const V2ST& other) const {
         return x == other.x && y == other.y;
@@ -49,9 +50,10 @@ struct V4F32 {
 };
 
 struct V2I32 {
-    float x;
-    float y;
+    int32_t x;
+    int32_t y;
 
     V2I32() = default;
-    V2I32 (float x, float y);
+    V2I32 (int32_t x, int32_t y);
+    bool operator==(V2I32 other);
 };

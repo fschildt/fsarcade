@@ -4,6 +4,9 @@
 V2ST::V2ST(size_t x, size_t y) : x(x), y(y) {
 }
 
+V2ST::V2ST(int32_t x, int32_t y) : x((size_t)x), y((size_t)y) {
+}
+
 bool V2ST::operator==(V2ST &b) {
     bool result = this->x == b.x && this->y == b.y;
     return result;
@@ -85,5 +88,11 @@ V4F32 V4F32::operator*(float scalar) {
     return result;
 }
 
-V2I32::V2I32(float x, float y) : x(x), y(y) {
+V2I32::V2I32(int32_t x, int32_t y) : x(x), y(y) {
 }
+
+bool V2I32::operator==(V2I32 other) {
+    bool result = x == other.x && y == other.y;
+    return result;
+}
+

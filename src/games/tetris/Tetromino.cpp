@@ -107,8 +107,8 @@ void Tetromino::Draw(int32_t level, RenderGroup& render_group) {
     float world_height = 3.0f;
     float tetromino_size_with_border = world_height / 20.0f;
 
-    int8_t x0 = m_X - 3;
-    int8_t y0 = m_Y - 2;
+    float x0 = static_cast<float>(m_X - 3);
+    float y0 = static_cast<float>(m_Y - 2);
 
     V2F32 world_pos = {
         ((world_width - tetromino_size_with_border*10) / 2.0f) + x0 * tetromino_size_with_border,
@@ -133,11 +133,11 @@ V3F32 Tetromino::GetColor(uint8_t id, int32_t level) {
 
         case TETROMINO_J:
         case TETROMINO_S: {
-            color = V3F32(0.8, 0.2, 0.2);
+            color = V3F32(0.8f, 0.2f, 0.2f);
         } break;
 
         default: {
-            color = V3F32(0.2, 0.4, 0.2);
+            color = V3F32(0.2f, 0.4f, 0.2f);
         }
     }
     return color;
@@ -154,8 +154,8 @@ void Tetromino::Draw(V2F32 pos, TetrominoId id, int32_t ori, int32_t level, floa
         for (int x = 0; x < 4; x++) {
             if (left_aligned_bitmap[y] & (0x8000 >> x)) {
                 V2F32 local_pos = {
-                    x * tetromino_size_with_border + tetromino_offset,
-                    y * tetromino_size_with_border + tetromino_offset
+                    (float)x * tetromino_size_with_border + tetromino_offset,
+                    (float)y * tetromino_size_with_border + tetromino_offset
                 };
                 V2F32 local_dim = {tetromino_size, tetromino_size};
 

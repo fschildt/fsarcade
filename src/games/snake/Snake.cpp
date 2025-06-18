@@ -24,8 +24,8 @@ Snake::Snake () {
     m_Head = 1;
     memset(m_BodyBitmap, 0, sizeof(m_BodyBitmap));
 
-    size_t head_x = m_MapWidth / 2;
-    size_t head_y = m_MapHeight / 2;
+    int32_t head_x = m_MapWidth / 2;
+    int32_t head_y = m_MapHeight / 2;
     m_BodyPositions[0] = {head_x -1, head_y};
     m_BodyPositions[1] = {head_x, head_y};
 
@@ -33,11 +33,13 @@ Snake::Snake () {
     m_Dist = std::uniform_int_distribution<int32_t>(0, m_MapWidth * m_MapHeight - 3);
 
     SpawnFood();
-}
+    }
 
 bool Snake::Update(std::vector<SDL_Event> &events, RenderGroup &render_group) {
     uint64_t milliseconds_since_t0 = SDL_GetTicks();
-    float dt_in_seconds = (milliseconds_since_t0 - m_LastMillisecondsSinceT0) / 1000.0f;
+    uint64_t milliseconds_since_t0_last = m_LastMillisecondsSinceT0;
+    uint64_t dt_in_milliseconds = milliseconds_since_t0 - milliseconds_since_t0_last;
+    float dt_in_seconds = (float)dt_in_milliseconds / 1000.0f;
     m_LastMillisecondsSinceT0 = milliseconds_since_t0;
 
 
@@ -75,8 +77,8 @@ void Snake::MaybeMoveSnake(float dt_in_seconds) {
     float tiles_per_second = m_TilesPerSecond;
     float seconds_per_tile = 1.0f / tiles_per_second;
     while (dt_in_seconds_to_use > seconds_per_tile) {
-        V2ST head_pos = m_BodyPositions[m_Head];
-        V2ST tail_pos = m_BodyPositions[m_Tail];
+        V2I32 head_pos = m_BodyPositions[m_Head];
+        V2I32 tail_pos = m_BodyPositions[m_Tail];
 
 
         // find head_pos
@@ -108,7 +110,7 @@ void Snake::MaybeMoveSnake(float dt_in_seconds) {
 
 
         // advance head
-        size_t max_positions = sizeof(m_BodyPositions) / sizeof(m_BodyPositions[0]);
+        int32_t max_positions = sizeof(m_BodyPositions) / sizeof(m_BodyPositions[0]);
         m_Head += 1;
         if (m_Head >= max_positions) {
             m_Head = 0;
@@ -123,7 +125,7 @@ void Snake::MaybeMoveSnake(float dt_in_seconds) {
         }
         else {
             // advance tail
-            V2ST tail_pos = m_BodyPositions[m_Tail];
+            V2I32 tail_pos = m_BodyPositions[m_Tail];
             m_BodyBitmap[tail_pos.y] &= ~(1 << tail_pos.x);
 
             m_Tail += 1;
@@ -193,12 +195,12 @@ void Snake::ProcessEventDuringResume(SDL_Event &event) {
 }
 
 void Snake::SpawnFood() {
-    uint32_t bit0_counts[MAX_MAP_HEIGHT];
-    uint32_t bit0_count_total = 0;
+    int32_t bit0_counts[MAX_MAP_HEIGHT];
+    int32_t bit0_count_total = 0;
 
     // count bits
-    for (size_t y = 0; y < m_MapHeight; y++) {
-        uint32_t bit1_count = 0;
+    for (int32_t y = 0; y < m_MapHeight; y++) {
+        int32_t bit1_count = 0;
 
         uint64_t bitmap_row = m_BodyBitmap[y];
         while (bitmap_row != 0) {
@@ -206,7 +208,7 @@ void Snake::SpawnFood() {
             bit1_count += 1;
         }
 
-        uint32_t bit0_count = m_MapWidth - bit1_count;
+        int32_t bit0_count = m_MapWidth - bit1_count;
         bit0_counts[y] = bit0_count;
         bit0_count_total += bit0_count;
     }
@@ -216,12 +218,12 @@ void Snake::SpawnFood() {
     }
 
     m_Dist.param(std::uniform_int_distribution<int32_t>::param_type(0, bit0_count_total - 1));
-    size_t bit0_index = m_Dist(m_Rng);
-    size_t bit0_x = 0;
-    size_t bit0_y = 0;
+    int32_t bit0_index = m_Dist(m_Rng);
+    int32_t bit0_x = 0;
+    int32_t bit0_y = 0;
 
     // find y
-    for (size_t y = 0; y < m_MapHeight; y++) {
+    for (int32_t y = 0; y < m_MapHeight; y++) {
         if (bit0_index < bit0_counts[y]) {
             bit0_y = y;
             break;
@@ -231,7 +233,7 @@ void Snake::SpawnFood() {
 
     // find x
     uint64_t bitmap_row_not = ~m_BodyBitmap[bit0_y];
-    for (size_t x = 0; x < m_MapWidth; x++) {
+    for (int32_t x = 0; x < m_MapWidth; x++) {
         if (bitmap_row_not & 1) {
             if (bit0_index == 0) {
                 bit0_x = x;
@@ -253,29 +255,29 @@ void Snake::Draw(RenderGroup &render_group) {
     float bodypart_size = 0.8f * tile_size;
     float bodypart_offset = (tile_size - bodypart_size) / 2;
 
-    float map_width = tile_size * m_MapWidth;
-    float map_height = tile_size * m_MapHeight;
-    float map_x = (world_width - map_width) / 2;
-    float map_y = (world_height - map_height) / 2;
+    float map_view_width = tile_size * (float)m_MapWidth;
+    float map_view_height = tile_size * (float)m_MapHeight;
+    float map_x = (world_width - map_view_width) / 2;
+    float map_y = (world_height - map_view_height) / 2;
 
-    size_t max_positions = sizeof(m_BodyPositions) / sizeof(m_BodyPositions[0]);
+    int32_t max_positions = sizeof(m_BodyPositions) / sizeof(m_BodyPositions[0]);
 
 
     /* draw map background */
     V3F32 map_world_pos = {map_x, map_y, 0.0f};
-    V2F32 map_world_dim = {map_width, map_height};
+    V2F32 map_world_dim = {map_view_width, map_view_height};
     V3F32 bg_color = {0.0f, 0.0f, 0.0f};
     render_group.PushRectangle(map_world_pos, map_world_dim, bg_color);
 
 
     /* draw snake */
     // 1) if tail > head: advance to end first
-    size_t tail = m_Tail;
+    int32_t tail = m_Tail;
     if (tail > m_Head) {
         while (tail < max_positions) {
             V3F32 local_pos = {
-                m_BodyPositions[tail].x * tile_size + bodypart_offset,
-                m_BodyPositions[tail].y * tile_size + bodypart_offset,
+                (float)m_BodyPositions[tail].x * tile_size + bodypart_offset,
+                (float)m_BodyPositions[tail].y * tile_size + bodypart_offset,
                 1.0f
             };
             V2F32 local_dim = {bodypart_size, bodypart_size};
@@ -296,8 +298,8 @@ void Snake::Draw(RenderGroup &render_group) {
     // 2) advance to head
     while (tail <= m_Head) {
         V3F32 local_pos = {
-            m_BodyPositions[tail].x * tile_size + bodypart_offset,
-            m_BodyPositions[tail].y * tile_size + bodypart_offset,
+            (float)m_BodyPositions[tail].x * tile_size + bodypart_offset,
+            (float)m_BodyPositions[tail].y * tile_size + bodypart_offset,
             1.0f
         };
         V2F32 local_dim = {bodypart_size, bodypart_size};
@@ -317,8 +319,8 @@ void Snake::Draw(RenderGroup &render_group) {
 
     /* draw food */
     V3F32 pos = {
-        map_world_pos.x + m_FoodPosition.x * tile_size + bodypart_offset,
-        map_world_pos.y + m_FoodPosition.y * tile_size + bodypart_offset,
+        map_world_pos.x + (float)m_FoodPosition.x * tile_size + bodypart_offset,
+        map_world_pos.y + (float)m_FoodPosition.y * tile_size + bodypart_offset,
         1.0f
     };
     V2F32 dim = {bodypart_size, bodypart_size};

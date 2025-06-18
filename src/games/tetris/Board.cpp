@@ -113,8 +113,8 @@ void Board::Draw(int32_t level, RenderGroup& render_group) {
             uint8_t tetromino_id = m_Idmap[y][x];
             if (tetromino_id < TETROMINO_ID_COUNT) {
                 V2F32 local_pos = {
-                    x * tetromino_size_with_border + tetromino_offset,
-                    y * tetromino_size_with_border + tetromino_offset
+                    (float)x * tetromino_size_with_border + tetromino_offset,
+                    (float)y * tetromino_size_with_border + tetromino_offset
                 };
                 V2F32 local_dim = {tetromino_size, tetromino_size};
 

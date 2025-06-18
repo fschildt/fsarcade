@@ -58,9 +58,9 @@ class Minesweeper : public Game {
         int32_t m_MapWidth = 16;
         int32_t m_MapHeight = 16;
 
-        V2F32 m_MapPos;
-        V2F32 m_CellSize;
-        V2F32 m_CellDrawSize;
+        V2F32 m_MapViewPos;
+        V2F32 m_CellOuterViewSize;
+        V2F32 m_CellInnerViewSize;
 
         std::unordered_set<V2ST> m_CoveredPositions;
         std::unordered_set<V2ST> m_FlaggedPositions;

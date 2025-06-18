@@ -17,7 +17,8 @@ uint32_t *GlIndexBuffer::GetData() {
 }
 
 uint32_t GlIndexBuffer::GetCount() {
-    return m_Indices.size();
+    uint32_t count = static_cast<uint32_t>(m_Indices.size());
+    return count;
 }
 
 void GlIndexBuffer::Reset() {

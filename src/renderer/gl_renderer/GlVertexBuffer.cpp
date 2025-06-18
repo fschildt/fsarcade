@@ -18,11 +18,11 @@ void GlVertexBuffer::Reset() {
 }
 
 float *GlVertexBuffer::GetData() {
-    return (float*)m_Vertices.data();
+    return reinterpret_cast<float*>(m_Vertices.data());
 }
 
 uint32_t GlVertexBuffer::GetCount() {
-    return m_Vertices.size();
+    return static_cast<uint32_t>(m_Vertices.size());
 }
 
 void GlVertexBuffer::PushRectangle(V3F32 pos, V2F32 dim, V3F32 color) {

@@ -24,37 +24,51 @@ void RenderGroup::SetCameraSize(float width, float height) {
     m_CameraHeight = height;
 }
 
-ImVec2 RenderGroup::ViewPosToImguiPos(V2F32 view_pos) {
-    float scale = GetScale();
-    float viewport_width = m_CameraWidth * scale;
-    float viewport_height = m_CameraHeight * scale;
-    float viewport_x0 = (m_ScreenWidth - viewport_width) / 2;
-    float viewport_y0 = (m_ScreenHeight - viewport_height) / 2;
-
-    ImVec2 result = {
-        viewport_x0 + view_pos.x * scale,
-        m_ScreenHeight - (viewport_y0 + view_pos.y * scale)
-    };
-
-    return result;
-}
-
-ImVec2 RenderGroup::ViewDimToImguiDim(V2F32 view_dim) {
-    float scale = GetScale();
-
-    ImVec2 result = {
-        view_dim.x * scale,
-        view_dim.y * scale
-    };
-
-    return result;
-}
-
 float RenderGroup::GetScale() {
-    float xunits = m_ScreenWidth / m_CameraWidth;
-    float yunits = m_ScreenHeight / m_CameraHeight;
+    float screen_width = static_cast<float>(m_ScreenWidth);
+    float screen_height = static_cast<float>(m_ScreenHeight);
+    float xunits = screen_width / m_CameraWidth;
+    float yunits = screen_height / m_CameraHeight;
     float scale = std::min(xunits, yunits);
     return scale;
+}
+
+V2F32 RenderGroup::ViewPosToScreenPos(V2F32 view_pos) {
+    float scale = GetScale();
+    float screen_width = static_cast<float>(m_ScreenWidth);
+    float screen_height = static_cast<float>(m_ScreenHeight);
+    float viewport_width = m_CameraWidth * scale;
+    float viewport_height = m_CameraHeight * scale;
+    float viewport_x0 = (screen_width - viewport_width) / 2;
+    float viewport_y0 = (screen_height - viewport_height) / 2;
+
+    V2F32 result;
+    result.x = viewport_x0 + view_pos.x * scale;
+    result.y = screen_height - (viewport_y0 + view_pos.y * scale);
+
+    return result;
+}
+
+V2F32 RenderGroup::ViewSizeToScreenSize(V2F32 view_size) {
+    float scale = GetScale();
+
+    V2F32 result;
+    result.x = view_size.x * scale;
+    result.y = view_size.y * scale;
+
+    return result;
+}
+
+ImVec2 RenderGroup::ViewPosToScreenPosImGui(V2F32 view_pos) {
+    V2F32 screen_pos = ViewPosToScreenPos(view_pos);
+    ImVec2 result = {screen_pos.x, screen_pos.y};
+    return result;
+}
+
+ImVec2 RenderGroup::ViewSizeToScreenSizeImGui(V2F32 view_size) {
+    V2F32 screen_size = ViewSizeToScreenSize(view_size);
+    ImVec2 result = {screen_size.x, screen_size.y};
+    return result;
 }
 
 void RenderGroup::Clear(V3F32 color) {

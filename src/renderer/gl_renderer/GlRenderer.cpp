@@ -21,9 +21,12 @@ MessageCallback(GLenum source,
                 const GLchar* message,
                 const void* userParam)
 {
-    fprintf( stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
-             ( type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "" ),
-             type, severity, message );
+    fprintf(stderr, "GL CALLBACK: %s, type = 0x%x, severity = 0x%x, message = %s\n",
+            type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "",
+            type,
+            severity,
+            message
+    );
 }
 
 GlRenderer::~GlRenderer() {
@@ -82,8 +85,6 @@ bool GlRenderer::Init() {
 void GlRenderer::Draw(RenderGroup& render_group) {
     render_group.Sort();
 
-    float screen_width = render_group.m_ScreenWidth;
-    float screen_height = render_group.m_ScreenHeight;
     float camera_width = render_group.m_CameraWidth;
     float camera_height = render_group.m_CameraHeight;
 
@@ -98,10 +99,10 @@ void GlRenderer::Draw(RenderGroup& render_group) {
 
     // viewport space
     float scale = render_group.GetScale();
-    float viewport_width = camera_width * scale;
-    float viewport_height = camera_height * scale;
-    float viewport_x0 = (screen_width - viewport_width) / 2;
-    float viewport_y0 = (screen_height - viewport_height) / 2;
+    int32_t viewport_width  = static_cast<int32_t>(camera_width * scale);
+    int32_t viewport_height = static_cast<int32_t>(camera_height * scale);
+    int32_t viewport_x0 = (render_group.m_ScreenWidth - viewport_width) / 2;
+    int32_t viewport_y0 = (render_group.m_ScreenHeight - viewport_height) / 2;
     glViewport(viewport_x0, viewport_y0, viewport_width, viewport_height);
 
 
@@ -143,8 +144,8 @@ void GlRenderer::Present() {
 }
 
 void GlRenderer::DrawBatch() {
-    int rectangle_index_count = m_RectangleIndexBuffer.GetCount();
-    int text_index_count = m_TextIndexBuffer.GetCount();
+    int32_t rectangle_index_count = static_cast<int32_t>(m_RectangleIndexBuffer.GetCount());
+    int32_t text_index_count = static_cast<int32_t>(m_TextIndexBuffer.GetCount());
 
     if (rectangle_index_count) {
         m_RectangleVertexBuffer.TransferData();

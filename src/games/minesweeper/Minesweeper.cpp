@@ -11,20 +11,21 @@
 // - Expert: 30x16 grid with 99 mines.
 
 Minesweeper::Minesweeper() {
+    float map_width = static_cast<float>(m_MapWidth);
+    float map_height = static_cast<float>(m_MapHeight);
     float cell_size = 0.8f * std::min(m_WorldHeight / MAX_MAP_HEIGHT, m_WorldWidth / MAX_MAP_WIDTH);
     float cell_size_without_border = 0.8f * cell_size;
 
-    m_MapPos = {
-        0.1f * cell_size_without_border + (m_WorldWidth - cell_size * m_MapWidth) / 2,
-        0.1f * cell_size_without_border + (m_WorldHeight - cell_size * m_MapHeight) / 2
+    m_MapViewPos = {
+        0.1f * cell_size_without_border + (m_WorldWidth - cell_size * map_width) / 2,
+        0.1f * cell_size_without_border + (m_WorldHeight - cell_size * map_height) / 2
     };
-    m_CellSize = {cell_size, cell_size};
-    m_CellDrawSize = {cell_size_without_border, cell_size_without_border};
-
+    m_CellOuterViewSize = {cell_size, cell_size};
+    m_CellInnerViewSize = {cell_size_without_border, cell_size_without_border};
 
 
     m_UncoveredPositions.reserve(MAX_MAP_WIDTH * MAX_MAP_HEIGHT);
-    m_CoveredPositions.reserve(1.3f * MAX_MAP_WIDTH * MAX_MAP_HEIGHT);
+    m_CoveredPositions.reserve((size_t)(1.3f * MAX_MAP_WIDTH * MAX_MAP_HEIGHT));
 
     for (int32_t y = 0; y < m_MapHeight; y++) {
         for (int32_t x = 0; x < m_MapHeight; x++) {
@@ -100,11 +101,11 @@ void Minesweeper::ProcessEventDuringResume(SDL_Event &event, RenderGroup &render
     } break;
 
     case SDL_EVENT_MOUSE_BUTTON_DOWN: {
-        V2F32 click_screen_pos = {event.button.x, render_group.m_ScreenHeight -1 - event.button.y};
+        V2F32 click_screen_pos = {event.button.x, (float)render_group.m_ScreenHeight -1 - event.button.y};
         V2F32 click_view_pos = ScreenPosToViewPos(click_screen_pos, render_group);
 
-        int32_t x = (click_view_pos.x - m_MapPos.x) / m_CellSize.x;
-        int32_t y = (click_view_pos.y - m_MapPos.y) / m_CellSize.y;
+        int32_t x = (int32_t)((click_view_pos.x - m_MapViewPos.x) / m_CellOuterViewSize.x);
+        int32_t y = (int32_t)((click_view_pos.y - m_MapViewPos.y) / m_CellOuterViewSize.y);
         if (x < 0 || x >= m_MapWidth) {
             break;
         }
@@ -195,9 +196,12 @@ int32_t Minesweeper::CountAdjacentMines(int32_t x, int32_t y) {
 V2F32 Minesweeper::ScreenPosToViewPos(V2F32 screen_pos, RenderGroup &render_group) {
     // e.g. [0, 1024] -> [0, 1] -> [0, 4]
     // e.g. [0,  768] -> [0, 1] -> [0, 3]
+    float screen_width = (float)render_group.m_ScreenWidth;
+    float screen_height = (float)render_group.m_ScreenHeight;
+
     V2F32 view_pos;
-    view_pos.x = (screen_pos.x / render_group.m_ScreenWidth) * m_WorldWidth;
-    view_pos.y = (screen_pos.y / render_group.m_ScreenHeight) * m_WorldHeight;
+    view_pos.x = (screen_pos.x / screen_width) * m_WorldWidth;
+    view_pos.y = (screen_pos.y / screen_height) * m_WorldHeight;
     return view_pos;
 }
 
@@ -218,21 +222,21 @@ void Minesweeper::DrawBoard(RenderGroup &render_group) {
 
     for (V2ST pos : m_CoveredPositions) {
         V3F32 world_pos = {
-            m_MapPos.x + pos.x * m_CellSize.x,
-            m_MapPos.y + pos.y * m_CellSize.y,
+            m_MapViewPos.x + (float)pos.x * m_CellOuterViewSize.x,
+            m_MapViewPos.y + (float)pos.y * m_CellOuterViewSize.y,
             0.0f
         };
-        render_group.PushRectangle(world_pos, m_CellDrawSize, covered_cell_color);
+        render_group.PushRectangle(world_pos, m_CellInnerViewSize, covered_cell_color);
     }
     for (V2ST pos: m_FlaggedPositions) {
-        V2F32 draw_size = {m_CellDrawSize.x * 0.5f, m_CellDrawSize.y * 0.5f};
+        V2F32 draw_size = {m_CellInnerViewSize.x * 0.5f, m_CellInnerViewSize.y * 0.5f};
         V2F32 draw_offset = {
-            (m_CellDrawSize.x - draw_size.x) / 2,
-            (m_CellDrawSize.y - draw_size.y) / 2
+            (m_CellInnerViewSize.x - draw_size.x) / 2,
+            (m_CellInnerViewSize.y - draw_size.y) / 2
         };
         V3F32 world_pos = {
-            m_MapPos.x + pos.x * m_CellSize.x + draw_offset.x,
-            m_MapPos.y + pos.y * m_CellSize.y + draw_offset.y,
+            m_MapViewPos.x + (float)pos.x * m_CellOuterViewSize.x + draw_offset.x,
+            m_MapViewPos.y + (float)pos.y * m_CellOuterViewSize.y + draw_offset.y,
             1.0f
         };
         V3F32 flag_color = {0.6f, 0.3f, 03.f};
@@ -240,11 +244,11 @@ void Minesweeper::DrawBoard(RenderGroup &render_group) {
     }
     for (V2ST pos : m_UncoveredPositions) {
         V3F32 world_pos = {
-            m_MapPos.x + pos.x * m_CellSize.x,
-            m_MapPos.y + pos.y * m_CellSize.y,
+            m_MapViewPos.x + (float)pos.x * m_CellOuterViewSize.x,
+            m_MapViewPos.y + (float)pos.y * m_CellOuterViewSize.y,
             0.0f
         };
-        render_group.PushRectangle(world_pos, m_CellDrawSize, uncovered_cell_color);
+        render_group.PushRectangle(world_pos, m_CellInnerViewSize, uncovered_cell_color);
     }
 }
 

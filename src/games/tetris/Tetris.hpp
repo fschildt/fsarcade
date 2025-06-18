@@ -17,7 +17,7 @@ private:
     void UpdateRunning(SDL_Event &event, float dt);
     void UpdatePaused(SDL_Event &event);
 
-    int32_t GetDropCount(float dt);
+    uint32_t GetDropCount(float dt);
 
 
     void DrawLineCounter(RenderGroup &render_group);
@@ -34,19 +34,19 @@ private:
     bool m_Paused = false;
     bool m_Running = true;
 
-    float m_DtRemaining = 0.0f;
-    uint64_t m_TLast = SDL_GetTicks();
+    float m_DtInSecondsRemaining = 0.0f;
+    uint64_t m_MillisecondsSinceT0Last = SDL_GetTicks();
 
     Tetromino m_ActiveTetromino;
     Tetromino m_NextTetromino;
     Board m_Board;
 
-    uint32_t m_TetrominoCounters[TETROMINO_ID_COUNT] = {};
-    uint32_t m_Score = 0;
-    uint32_t m_LineCounter = 0;
-    uint32_t m_StartingLevel = 0;
-    uint32_t m_Level = 0;
-    uint32_t m_SoftdropCounter = 0;
+    int32_t m_TetrominoCounters[TETROMINO_ID_COUNT] = {};
+    int32_t m_Score = 0;
+    int32_t m_LineCounter = 0;
+    int32_t m_StartingLevel = 0;
+    int32_t m_Level = 0;
+    int32_t m_SoftdropCounter = 0;
 
     ImGuiWindowFlags m_ImGuiWindowFlags = ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoScrollbar;
 };

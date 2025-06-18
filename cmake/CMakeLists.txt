@@ -17,7 +17,7 @@ project(fsarcade)
 
 add_executable(fsarcade)
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(fsarcade PRIVATE -Wall -pedantic-errors -Werror)
+    target_compile_options(fsarcade PRIVATE -pedantic-errors -Wall -Weffc++ -Wconversion -Wsign-conversion)
 endif ()
 target_sources(fsarcade PUBLIC
     ${FSARCADE_SRC_DIR}/main.cpp
