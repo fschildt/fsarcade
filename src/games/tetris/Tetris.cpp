@@ -7,8 +7,11 @@
 // Todo: change to new font scaling api in imgui first
 // Todo: test text with hardcoded gap + dummy to ensure it gets placed as expected
 
-Tetris::Tetris() {
-    m_TetrominoCounters[m_ActiveTetromino.m_Id] += 1;
+Tetris::Tetris() :
+    m_ActiveTetromino(m_Board),
+    m_NextTetromino(m_Board)
+{
+    m_TetrominoCounters[(size_t)m_ActiveTetromino.GetId()] += 1;
 }
 
 bool Tetris::Update(std::vector<SDL_Event> &events, RenderGroup &render_group) {
@@ -26,7 +29,7 @@ bool Tetris::Update(std::vector<SDL_Event> &events, RenderGroup &render_group) {
     if (!m_Paused) {
         uint32_t drop_count = GetDropCount(seconds_dt);
         while (drop_count) {
-            bool moved_down = m_ActiveTetromino.MoveDown(m_Board.m_Bitmap);
+            bool moved_down = m_ActiveTetromino.MaybeMoveDown();
             if (!moved_down) {
                 HandleTetrominoPlacement();
             }
@@ -45,7 +48,7 @@ bool Tetris::Update(std::vector<SDL_Event> &events, RenderGroup &render_group) {
     }
 
     m_Board.Draw(m_Level, render_group);
-    m_ActiveTetromino.Draw(m_Level, render_group);
+    m_ActiveTetromino.Draw(render_group);
 
     DrawNextTetromino(render_group);
     DrawStatistics(render_group);
@@ -60,16 +63,15 @@ bool Tetris::Update(std::vector<SDL_Event> &events, RenderGroup &render_group) {
 }
 
 void Tetris::UpdateRunning(SDL_Event &event, float dt) {
-    uint16_t *board_bitmap = m_Board.m_Bitmap;
     switch (event.type) {
     case SDL_EVENT_KEY_DOWN: {
         auto key = event.key.key;
         if (key == SDLK_RIGHT) {
-            m_ActiveTetromino.MoveHorizontally(1, board_bitmap);
+            m_ActiveTetromino.MaybeMoveHorizontally(TetrominoDirection::Right);
         } else if (key == SDLK_LEFT) {
-            m_ActiveTetromino.MoveHorizontally(-1, board_bitmap);
+            m_ActiveTetromino.MaybeMoveHorizontally(TetrominoDirection::Left);
         } else if (key == SDLK_DOWN) {
-            bool moved_down = m_ActiveTetromino.MoveDown(board_bitmap);
+            bool moved_down = m_ActiveTetromino.MaybeMoveDown();
             if (!moved_down) {
                 HandleTetrominoPlacement();
             }
@@ -77,9 +79,9 @@ void Tetris::UpdateRunning(SDL_Event &event, float dt) {
                 m_SoftdropCounter++;
             }
         } else if (key == SDLK_X) {
-            m_ActiveTetromino.Rotate(1, board_bitmap);
+            m_ActiveTetromino.MaybeRotate(TetrominoRotation::Clockwise);
         } else if (key == SDLK_Z || key == SDLK_Y) {
-            m_ActiveTetromino.Rotate(3, board_bitmap);
+            m_ActiveTetromino.MaybeRotate(TetrominoRotation::CounterClockwise);
         } else if (key == SDLK_ESCAPE) {
             m_Paused = true;
         }
@@ -101,14 +103,13 @@ void Tetris::UpdatePaused(SDL_Event &event) {
 }
 
 void Tetris::HandleTetrominoPlacement() {
-    m_Board.PlaceTetromino(m_ActiveTetromino);
-    int32_t rows_cleared = m_Board.ClearRows(m_ActiveTetromino.m_Y);
+    int32_t rows_cleared = m_Board.PlaceTetromino(m_ActiveTetromino);
 
     m_ActiveTetromino = m_NextTetromino;
-    m_NextTetromino = Tetromino();
+    m_NextTetromino = Tetromino(m_Board);
 
     m_LineCounter += rows_cleared;
-    m_TetrominoCounters[m_ActiveTetromino.m_Id] += 1;
+    m_TetrominoCounters[(size_t)m_ActiveTetromino.GetId()] += 1;
 
     if (rows_cleared == 1) {
         m_Score += 40 * (m_Level + 1);
@@ -188,25 +189,27 @@ void Tetris::DrawStatistics(RenderGroup &render_group) {
     ImVec2 screen_text_gap = render_group.ViewSizeToScreenSizeImGui(view_text_gap);
 
 
-    Tetromino::Draw(view_tetrominoes_pos, TETROMINO_T, 0, 0, 0.5f, render_group);
+    using enum TetrominoId;
+
+    Tetromino::Draw(TETROMINO_T, 0, view_tetrominoes_pos, 0.5f, render_group);
     view_tetrominoes_pos.y -= view_advance.y;
 
-    Tetromino::Draw(view_tetrominoes_pos, TETROMINO_J, 0, 0, 0.5f, render_group);
+    Tetromino::Draw(TETROMINO_J, 0, view_tetrominoes_pos, 0.5f, render_group);
     view_tetrominoes_pos.y -= view_advance.y;
 
-    Tetromino::Draw(view_tetrominoes_pos, TETROMINO_Z, 0, 0, 0.5f, render_group);
+    Tetromino::Draw(TETROMINO_Z, 0, view_tetrominoes_pos, 0.5f, render_group);
     view_tetrominoes_pos.y -= view_advance.y;
 
-    Tetromino::Draw(view_tetrominoes_pos, TETROMINO_O, 0, 0, 0.5f, render_group);
+    Tetromino::Draw(TETROMINO_O, 0, view_tetrominoes_pos, 0.5f, render_group);
     view_tetrominoes_pos.y -= view_advance.y;
 
-    Tetromino::Draw(view_tetrominoes_pos, TETROMINO_S, 0, 0, 0.5f, render_group);
+    Tetromino::Draw(TETROMINO_S, 0, view_tetrominoes_pos, 0.5f, render_group);
     view_tetrominoes_pos.y -= view_advance.y;
 
-    Tetromino::Draw(view_tetrominoes_pos, TETROMINO_L, 0, 0, 0.5f, render_group);
+    Tetromino::Draw(TETROMINO_L, 0, view_tetrominoes_pos, 0.5f, render_group);
     view_tetrominoes_pos.y -= view_advance.y;
 
-    Tetromino::Draw(view_tetrominoes_pos, TETROMINO_I, 0, 0, 0.5f, render_group);
+    Tetromino::Draw(TETROMINO_I, 0, view_tetrominoes_pos, 0.5f, render_group);
     view_tetrominoes_pos.y -= view_advance.y;
 
 
@@ -219,19 +222,19 @@ void Tetris::DrawStatistics(RenderGroup &render_group) {
     ImGui::SetNextWindowPos(screen_text_pos);
     ImGui::Begin("TetrisStatistics", nullptr, m_ImGuiWindowFlags);
 
-    ImGui::Text("%d", m_TetrominoCounters[TETROMINO_T]);
+    ImGui::Text("%d", m_TetrominoCounters[(size_t)TETROMINO_T]);
     ImGui::Dummy(screen_text_gap);
-    ImGui::Text("%d", m_TetrominoCounters[TETROMINO_J]);
+    ImGui::Text("%d", m_TetrominoCounters[(size_t)TETROMINO_J]);
     ImGui::Dummy(screen_text_gap);
-    ImGui::Text("%d", m_TetrominoCounters[TETROMINO_Z]);
+    ImGui::Text("%d", m_TetrominoCounters[(size_t)TETROMINO_Z]);
     ImGui::Dummy(screen_text_gap);
-    ImGui::Text("%d", m_TetrominoCounters[TETROMINO_O]);
+    ImGui::Text("%d", m_TetrominoCounters[(size_t)TETROMINO_O]);
     ImGui::Dummy(screen_text_gap);
-    ImGui::Text("%d", m_TetrominoCounters[TETROMINO_S]);
+    ImGui::Text("%d", m_TetrominoCounters[(size_t)TETROMINO_S]);
     ImGui::Dummy(screen_text_gap);
-    ImGui::Text("%d", m_TetrominoCounters[TETROMINO_L]);
+    ImGui::Text("%d", m_TetrominoCounters[(size_t)TETROMINO_L]);
     ImGui::Dummy(screen_text_gap);
-    ImGui::Text("%d", m_TetrominoCounters[TETROMINO_I]);
+    ImGui::Text("%d", m_TetrominoCounters[(size_t)TETROMINO_I]);
     ImGui::Dummy(screen_text_gap);
 
     ImGui::End();
@@ -259,7 +262,7 @@ void Tetris::DrawNextTetromino(RenderGroup &render_group) {
 
 
     V2F32 tetromino_view_pos = {3.0, 1.4f};
-    Tetromino::Draw(tetromino_view_pos, m_NextTetromino.m_Id, 0, m_Level, 0.5f, render_group);
+    Tetromino::Draw(m_NextTetromino.GetId(), 0, tetromino_view_pos, 0.5f, render_group);
 }
 
 void Tetris::DrawLevel(RenderGroup &render_group) {

@@ -34,11 +34,6 @@ Minesweeper::Minesweeper() {
     }
 
 
-    memset(m_IsCoveredBitmap, 0xff, sizeof(m_IsCoveredBitmap));
-    memset(m_IsFlaggedBitmap, 0, sizeof(m_IsFlaggedBitmap));
-    memset(m_IsMineBitmap, 0, sizeof(m_IsMineBitmap));
-
-
     int32_t mine_count = 40;
     assert(m_MapWidth == 16 && m_MapHeight == 16);
 

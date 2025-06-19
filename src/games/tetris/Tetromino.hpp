@@ -3,8 +3,9 @@
 #include <basic/defs.hpp>
 #include <basic/math.hpp>
 #include <renderer/RenderGroup.hpp>
+#include <games/tetris/Board.hpp>
 
-enum TetrominoId {
+enum class TetrominoId : uint8_t {
     TETROMINO_O = 0,
     TETROMINO_S,
     TETROMINO_Z,
@@ -15,32 +16,42 @@ enum TetrominoId {
     TETROMINO_ID_COUNT,
     TETROMINO_ID_NONE,
 };
+enum class TetrominoRotation {Clockwise = 1, CounterClockwise = 3};
+enum class TetrominoDirection {Left = -1, Right = 1};
+
 
 class Tetromino {
 public:
-    Tetromino();
-    void MoveHorizontally(int32_t direction, uint16_t *board_bitmap);
-    void Rotate(int32_t rotation, uint16_t *board_bitmap); // 1 = right; 3 = left
-    bool MoveDown(uint16_t *board_bitmap);
+    Tetromino() = delete;
+    Tetromino(Board &board);
+    Tetromino(uint16_t *board_bitmap);
 
+    TetrominoId GetId();
+    BoardPos GetPos();
     void GetBitmap(uint16_t *bitmap);
-    void Draw(int32_t level, RenderGroup& render_group);
-    bool CollidesWithBoard(uint16_t *board_bitmap, int32_t id, int32_t orientation, int32_t x, int32_t y);
+
+    bool MaybeMoveDown();
+    void MaybeMoveHorizontally(TetrominoDirection direction);
+    void MaybeRotate(TetrominoRotation rotation);
+
+    void Draw(RenderGroup &render_group) const;
 
 
 public:
-    static V3F32 GetColor(uint8_t id, int32_t level);
-    static void Draw(V2F32 pos, TetrominoId id, int32_t ori, int32_t level, float scale, RenderGroup &render_group);
+    static bool IsCollisionWithBoard(TetrominoId id, BoardPos pos, int32_t ori, uint16_t *board_bitmap);
+    static void GetBitmap(TetrominoId id, BoardPos pos, int32_t ori, uint16_t *bitmap);
+    static V3F32 GetColor(TetrominoId id);
+    static void Draw(TetrominoId id, int32_t ori, V2F32 pos, float scale, RenderGroup &render_group);
 
 
 private:
     static TetrominoId GetRandomId();
 
 
-public:
+private:
     TetrominoId m_Id;
-    int32_t m_Orientation;
-    int32_t m_X;
-    int32_t m_Y;
+    BoardPos m_Pos;
+    int32_t m_Ori;
+    uint16_t *m_BoardBitmap;
 };
 

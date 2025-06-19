@@ -12,36 +12,38 @@ Board::Board() {
 
     for (int y = 0; y < 22; y++) {
         for (int x = 0; x < 10; x++) {
-            m_Idmap[y][x] = TETROMINO_ID_NONE;
+            m_Idmap[y][x] = (uint8_t)TetrominoId::TETROMINO_ID_NONE;
         }
     }
 }
 
-void Board::PlaceTetromino(Tetromino tetromino) {
-    int32_t tetromino_bitmap_x = tetromino.m_X;
-    int32_t tetromino_bitmap_y = tetromino.m_Y;
-
+int32_t Board::PlaceTetromino(Tetromino &tetromino) {
+    BoardPos pos = tetromino.GetPos();
+    TetrominoId id = tetromino.GetId();
 
     // place in Board's Bitmap
     uint16_t tetromino_bitmap[4];
     tetromino.GetBitmap(tetromino_bitmap);
-    m_Bitmap[tetromino_bitmap_y+0] |= tetromino_bitmap[0];
-    m_Bitmap[tetromino_bitmap_y+1] |= tetromino_bitmap[1];
-    m_Bitmap[tetromino_bitmap_y+2] |= tetromino_bitmap[2];
-    m_Bitmap[tetromino_bitmap_y+3] |= tetromino_bitmap[3];
+    m_Bitmap[pos.y+0] |= tetromino_bitmap[0];
+    m_Bitmap[pos.y+1] |= tetromino_bitmap[1];
+    m_Bitmap[pos.y+2] |= tetromino_bitmap[2];
+    m_Bitmap[pos.y+3] |= tetromino_bitmap[3];
 
 
     // place in Board's Idmap
     for (int32_t y = 0; y < 4; y++) {
         for (int32_t x = 0; x < 4; x++) {
-            int32_t bitmap_x = 0x8000 >> (tetromino_bitmap_x + x);
+            int32_t bitmap_x = 0x8000 >> (pos.x + x);
             if (tetromino_bitmap[y] & bitmap_x) {
-                int32_t idmap_x = tetromino_bitmap_x + x - 3;
-                int32_t idmap_y = tetromino_bitmap_y + y - 2;
-                m_Idmap[idmap_y][idmap_x] = tetromino.m_Id;
+                int32_t idmap_x = pos.x + x - 3;
+                int32_t idmap_y = pos.y + y - 2;
+                m_Idmap[idmap_y][idmap_x] = static_cast<uint8_t>(id);
             }
         }
     }
+
+    int32_t rows_cleared = ClearRows(pos.y);
+    return rows_cleared;
 }
 
 int32_t Board::ClearRows(int32_t y0) {
@@ -59,22 +61,16 @@ int32_t Board::ClearRows(int32_t y0) {
         }
         else {
             m_Bitmap[y-rows_cleared] = m_Bitmap[y];
-            for (int32_t x = 0; x < 10; x++) {
-                m_Idmap[y-2-rows_cleared][x] = m_Idmap[y-2][x];
-            }
+            std::copy(m_Idmap[y-2], m_Idmap[y-2] + 10, m_Idmap[y-2-rows_cleared]);
         }
     }
     for (int32_t y = y1; y < 24; y++) {
         m_Bitmap[y-rows_cleared] = m_Bitmap[y];
-        for (int32_t x = 0; x < 10; x++) {
-            m_Idmap[y-2-rows_cleared][x] = m_Idmap[y-2][x];
-        }
+        std::copy(m_Idmap[y-2], m_Idmap[y-2] + 10, m_Idmap[y-2-rows_cleared]);
     }
     for (int32_t y = 24-rows_cleared; y < 24; y++) {
         m_Bitmap[y] = 0xe007;
-        for (int32_t x = 0; x < 10; x++) {
-            m_Idmap[y-2][x] = TETROMINO_ID_NONE;
-        }
+        std::copy(m_Idmap[y-2], m_Idmap[y-2] + 10, m_Idmap[y-2-rows_cleared]);
     }
 
 
@@ -111,7 +107,7 @@ void Board::Draw(int32_t level, RenderGroup& render_group) {
     for (size_t y = 0; y < 20; y++) {
         for (size_t x = 0; x < 10; x++) {
             uint8_t tetromino_id = m_Idmap[y][x];
-            if (tetromino_id < TETROMINO_ID_COUNT) {
+            if (tetromino_id < (uint8_t)TetrominoId::TETROMINO_ID_COUNT) {
                 V2F32 local_pos = {
                     (float)x * tetromino_size_with_border + tetromino_offset,
                     (float)y * tetromino_size_with_border + tetromino_offset
@@ -127,7 +123,7 @@ void Board::Draw(int32_t level, RenderGroup& render_group) {
                 V2F32 world_dim = local_dim;
 
 
-                V3F32 color = Tetromino::GetColor(tetromino_id, level);
+                V3F32 color = Tetromino::GetColor(static_cast<TetrominoId>(tetromino_id));
                 render_group.PushRectangle(world_pos, world_dim, color);
             }
         }

@@ -58,71 +58,99 @@ static const uint16_t s_left_aligned_bitmaps[7][4][4] = {
 
 
 TetrominoId Tetromino::GetRandomId() {
-    static std::uniform_int_distribution<int> s_Dist(0, TETROMINO_ID_COUNT-1);
+    static std::uniform_int_distribution<int> s_Dist(0, (int)TetrominoId::TETROMINO_ID_COUNT-1);
     static std::mt19937 s_Rng((std::random_device()()));
     TetrominoId id = static_cast<TetrominoId>(s_Dist(s_Rng));
     return id;
 }
 
-Tetromino::Tetromino() :
-        m_Id(GetRandomId()),
-        m_Orientation(0),
-        m_X(6),
-        m_Y(20)
+Tetromino::Tetromino(uint16_t *board_bitmap) :
+    m_Id(GetRandomId()),
+    m_Pos{6, 20},
+    m_Ori{0},
+    m_BoardBitmap(board_bitmap)
 {
 }
 
-void Tetromino::MoveHorizontally(int32_t direction, uint16_t *board_bitmap) {
-    int32_t desired_x = m_X + direction;
-    if (!CollidesWithBoard(board_bitmap, m_Id, m_Orientation, desired_x, m_Y)) {
-        m_X = desired_x;
+Tetromino::Tetromino(Board &board) :
+    Tetromino(board.m_Bitmap)
+{
+}
+
+TetrominoId Tetromino::GetId() {
+    return m_Id;
+}
+
+BoardPos Tetromino::GetPos() {
+    return m_Pos;
+}
+
+void Tetromino::GetBitmap(uint16_t *bitmap) {
+    GetBitmap(m_Id, m_Pos, m_Ori, bitmap);
+}
+
+void Tetromino::MaybeRotate(TetrominoRotation rotation) {
+    int32_t rot = static_cast<int32_t>(rotation);
+    int32_t ori = (m_Ori + rot) % 4;
+    if (!IsCollisionWithBoard(m_Id, m_Pos, ori, m_BoardBitmap)) {
+        m_Ori = ori;
     }
 }
 
-void Tetromino::Rotate(int32_t rotation, uint16_t *board_bitmap) {
-    int32_t desired_ori = (m_Orientation + rotation) % 4;
-    if (!CollidesWithBoard(board_bitmap, m_Id, desired_ori, m_X, m_Y)) {
-        m_Orientation = desired_ori;
+void Tetromino::MaybeMoveHorizontally(TetrominoDirection direction) {
+    BoardPos pos = m_Pos;
+    pos.x += static_cast<int32_t>(direction);
+    if (!IsCollisionWithBoard(m_Id, pos, m_Ori, m_BoardBitmap)) {
+        m_Pos.x = pos.x;
     }
 }
 
-bool Tetromino::MoveDown(uint16_t *board_bitmap) {
-    int32_t target_y = m_Y - 1;
-    if (!CollidesWithBoard(board_bitmap, m_Id, m_Orientation, m_X, target_y)) {
-        m_Y = target_y;
+bool Tetromino::MaybeMoveDown() {
+    BoardPos pos = m_Pos;
+    pos.y -= 1;
+    if (!IsCollisionWithBoard(m_Id, pos, m_Ori, m_BoardBitmap)) {
+        m_Pos.y = pos.y;
         return true;
     }
     return false;
 }
 
-bool Tetromino::CollidesWithBoard(uint16_t *board_bitmap, int32_t id, int32_t orientation, int32_t x, int32_t y) {
-    uint64_t tetromino_bits = *(uint64_t*)(&s_left_aligned_bitmaps[id][orientation][0]) >> x;
-    uint64_t board_bits = *(uint64_t*)(&board_bitmap[y]);
-    bool is_collision = tetromino_bits & board_bits;
-    return is_collision;
-}
-
-void Tetromino::Draw(int32_t level, RenderGroup& render_group) {
+void Tetromino::Draw(RenderGroup &render_group) const {
     float world_width = 4.0f;
     float world_height = 3.0f;
     float tetromino_size_with_border = world_height / 20.0f;
 
-    float x0 = static_cast<float>(m_X - 3);
-    float y0 = static_cast<float>(m_Y - 2);
+    float x0 = static_cast<float>(m_Pos.x - 3);
+    float y0 = static_cast<float>(m_Pos.y - 2);
 
     V2F32 world_pos = {
         ((world_width - tetromino_size_with_border*10) / 2.0f) + x0 * tetromino_size_with_border,
         y0 * tetromino_size_with_border
     };
 
-    Tetromino::Draw(world_pos, m_Id, m_Orientation, 0, 1.0f, render_group);
+    Tetromino::Draw(m_Id, m_Ori, world_pos, 1.0f, render_group);
 }
 
-void Tetromino::GetBitmap(uint16_t *bitmap) {
-    *(uint64_t*)bitmap = *(uint64_t*)&s_left_aligned_bitmaps[m_Id][m_Orientation][0] >> m_X;
+bool Tetromino::IsCollisionWithBoard(TetrominoId id, BoardPos pos, int32_t ori, uint16_t *board_bitmap) {
+    uint16_t tetromino_bitmap[16];
+    GetBitmap(id, pos, ori, tetromino_bitmap);
+
+    uint64_t tetromino_bits = *(uint64_t*)(tetromino_bitmap);
+    uint64_t board_bits = *(uint64_t*)(&board_bitmap[pos.y]);
+    bool is_collision = tetromino_bits & board_bits;
+    return is_collision;
 }
 
-V3F32 Tetromino::GetColor(uint8_t id, int32_t level) {
+void Tetromino::GetBitmap(TetrominoId id, BoardPos pos, int32_t ori, uint16_t *bitmap) {
+    size_t id_ = static_cast<size_t>(id);
+    uint64_t *src  = (uint64_t*)s_left_aligned_bitmaps[id_][ori];
+    uint64_t *dest = (uint64_t*)bitmap;
+    *dest = *src >> pos.x;
+}
+
+V3F32 Tetromino::GetColor(TetrominoId id) {
+    using enum TetrominoId;
+
     V3F32 color;
     switch (id) {
         case TETROMINO_I:
@@ -143,13 +171,15 @@ V3F32 Tetromino::GetColor(uint8_t id, int32_t level) {
     return color;
 }
 
-void Tetromino::Draw(V2F32 pos, TetrominoId id, int32_t ori, int32_t level, float scale, RenderGroup &render_group) {
+void Tetromino::Draw(TetrominoId id, int32_t ori, V2F32 pos, float scale, RenderGroup &render_group) {
+    int32_t id_ = static_cast<int32_t>(id);
+
     float world_height = 3.0f;
     float tetromino_size_with_border = scale * world_height / 20.0f;
     float tetromino_size = 0.8f * tetromino_size_with_border;
     float tetromino_offset = 0.1f * tetromino_size_with_border;
 
-    const uint16_t *left_aligned_bitmap = s_left_aligned_bitmaps[id][ori];
+    uint16_t *left_aligned_bitmap = (uint16_t*)s_left_aligned_bitmaps[id_][ori];
     for (int y = 0; y < 4; y++) {
         for (int x = 0; x < 4; x++) {
             if (left_aligned_bitmap[y] & (0x8000 >> x)) {
@@ -168,7 +198,7 @@ void Tetromino::Draw(V2F32 pos, TetrominoId id, int32_t ori, int32_t level, floa
                 V2F32 world_dim = local_dim;
 
 
-                V3F32 color = GetColor(id, level);
+                V3F32 color = GetColor(id);
                 render_group.PushRectangle(world_pos, world_dim, color);
             }
         }

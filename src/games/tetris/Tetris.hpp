@@ -1,6 +1,6 @@
 #pragma once
 
-#include "imgui.h"
+#include <imgui.h>
 #include <games/Game.hpp>
 #include <games/tetris/Tetromino.hpp>
 #include <games/tetris/Board.hpp>
@@ -19,7 +19,6 @@ private:
 
     uint32_t GetDropCount(float dt);
 
-
     void DrawLineCounter(RenderGroup &render_group);
     void DrawStatistics(RenderGroup &render_group);
 
@@ -37,11 +36,11 @@ private:
     float m_DtInSecondsRemaining = 0.0f;
     uint64_t m_MillisecondsSinceT0Last = SDL_GetTicks();
 
+    Board m_Board;
     Tetromino m_ActiveTetromino;
     Tetromino m_NextTetromino;
-    Board m_Board;
 
-    int32_t m_TetrominoCounters[TETROMINO_ID_COUNT] = {};
+    int32_t m_TetrominoCounters[(size_t)TetrominoId::TETROMINO_ID_COUNT] {};
     int32_t m_Score = 0;
     int32_t m_LineCounter = 0;
     int32_t m_StartingLevel = 0;

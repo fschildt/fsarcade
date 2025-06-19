@@ -65,9 +65,9 @@ class Minesweeper : public Game {
         std::unordered_set<V2ST> m_CoveredPositions;
         std::unordered_set<V2ST> m_FlaggedPositions;
         std::vector<V2ST> m_UncoveredPositions;
-        uint32_t m_IsCoveredBitmap[MAX_MAP_HEIGHT];
-        uint32_t m_IsFlaggedBitmap[MAX_MAP_HEIGHT];
-        uint32_t m_IsMineBitmap[MAX_MAP_HEIGHT];
+        uint32_t m_IsCoveredBitmap[MAX_MAP_HEIGHT] {};
+        uint32_t m_IsFlaggedBitmap[MAX_MAP_HEIGHT] {};
+        uint32_t m_IsMineBitmap[MAX_MAP_HEIGHT] {};
 };
 
 
