@@ -1,7 +1,5 @@
 #!/bin/sh
 
-rm imgui.ini
-
 mkdir -p build
 cd build
 
