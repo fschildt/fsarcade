@@ -4,6 +4,8 @@
 #include <games/tetris/Tetris.hpp>
 #include <imgui.h>
 
+#include <iostream>
+
 // Todo: change to new font scaling api in imgui first
 // Todo: test text with hardcoded gap + dummy to ensure it gets placed as expected
 
@@ -14,10 +16,32 @@ Tetris::Tetris() :
     m_TetrominoCounters[(size_t)m_ActiveTetromino.GetId()] += 1;
 }
 
+void Tetris::Restart() {
+    m_RunningState = TetrisRunningState::Resume;
+    m_DtInSecondsRemaining = 0.0f;
+    m_MillisecondsSinceT0Last = SDL_GetTicks();
+
+    // Todo: Don't reconstruct! Make reset methods.
+    m_Board = Board();
+    m_ActiveTetromino = Tetromino(m_Board);
+    m_NextTetromino = Tetromino(m_Board);
+
+    memset(m_TetrominoCounters, 0, sizeof(m_TetrominoCounters));
+    m_Score = 0;
+    m_LineCounter = 0;
+    m_StartingLevel = 0;
+    m_Level = 0;
+    m_SoftdropCounter = 0;
+}
+
 bool Tetris::Update(std::vector<SDL_Event> &events, RenderGroup &render_group) {
     V3F32 clear_color = V3F32(0.2f, 0.2f, 0.2f);
     render_group.SetCameraSize(4.0f, 3.0f);
     render_group.Clear(clear_color);
+
+    if (m_RunningState == TetrisRunningState::Restart) {
+        Restart();
+    }
 
     uint64_t milliseconds_since_t0 = SDL_GetTicks();
     uint64_t milliseconds_since_t0_last = m_MillisecondsSinceT0Last;
@@ -26,43 +50,35 @@ bool Tetris::Update(std::vector<SDL_Event> &events, RenderGroup &render_group) {
     m_MillisecondsSinceT0Last = milliseconds_since_t0;
 
 
-    if (!m_Paused) {
-        uint32_t drop_count = GetDropCount(seconds_dt);
-        while (drop_count) {
+    if (m_RunningState == TetrisRunningState::Resume) {
+        uint32_t harddrop_count = GetHarddropCount(seconds_dt);
+        while (harddrop_count) {
             bool moved_down = m_ActiveTetromino.MaybeMoveDown();
             if (!moved_down) {
                 HandleTetrominoPlacement();
             }
-            drop_count--;
+            harddrop_count--;
         }
     }
 
 
     for (auto &event : events) {
-        if (m_Paused) {
-            UpdatePaused(event);
-        }
-        else {
-            UpdateRunning(event, seconds_dt);
+        using enum TetrisRunningState;
+        switch (m_RunningState) {
+            case Resume: UpdateResumeState(event); break;
+            case Pause: UpdatePauseState(event); break;
+            default:;
         }
     }
 
-    m_Board.Draw(m_Level, render_group);
-    m_ActiveTetromino.Draw(render_group);
+    m_RunningState = Draw(render_group);
 
-    DrawNextTetromino(render_group);
-    DrawStatistics(render_group);
-    DrawLineCounter(render_group);
-    DrawLevel(render_group);
-    DrawScore(render_group);
-    if (m_Paused) {
-        DrawPauseMenu(render_group);
-    }
 
-    return m_Running;
+    bool keep_running = m_RunningState != TetrisRunningState::Exit;
+    return keep_running;
 }
 
-void Tetris::UpdateRunning(SDL_Event &event, float dt) {
+void Tetris::UpdateResumeState(SDL_Event &event) {
     switch (event.type) {
     case SDL_EVENT_KEY_DOWN: {
         auto key = event.key.key;
@@ -83,19 +99,19 @@ void Tetris::UpdateRunning(SDL_Event &event, float dt) {
         } else if (key == SDLK_Z || key == SDLK_Y) {
             m_ActiveTetromino.MaybeRotate(TetrominoRotation::CounterClockwise);
         } else if (key == SDLK_ESCAPE) {
-            m_Paused = true;
+            m_RunningState = TetrisRunningState::Pause;
         }
     }
     default:;
     }
 }
 
-void Tetris::UpdatePaused(SDL_Event &event) {
+void Tetris::UpdatePauseState(SDL_Event &event) {
     switch (event.type) {
     case SDL_EVENT_KEY_DOWN: {
         auto key = event.key.key;
         if (key == SDLK_ESCAPE) {
-            m_Paused = false;
+            m_RunningState = TetrisRunningState::Resume;
         }
     }
     default:;
@@ -107,6 +123,15 @@ void Tetris::HandleTetrominoPlacement() {
 
     m_ActiveTetromino = m_NextTetromino;
     m_NextTetromino = Tetromino(m_Board);
+
+    if (rows_cleared == -1) {
+        m_RunningState = TetrisRunningState::GameOver;
+        if (m_Score > m_HighScore) {
+            m_HighScore = m_Score;
+        }
+        return;
+    }
+
 
     m_LineCounter += rows_cleared;
     m_TetrominoCounters[(size_t)m_ActiveTetromino.GetId()] += 1;
@@ -130,7 +155,7 @@ void Tetris::HandleTetrominoPlacement() {
     m_Level = m_StartingLevel + m_LineCounter / 10;
 }
 
-uint32_t Tetris::GetDropCount(float dt) {
+uint32_t Tetris::GetHarddropCount(float dt) {
     float nes_frame_time = 1.0f / 60;
     int32_t nes_frames_per_cell;
     if      (m_Level <= 8)  nes_frames_per_cell = 48 - m_Level * 5;
@@ -145,25 +170,69 @@ uint32_t Tetris::GetDropCount(float dt) {
     float dt_level = static_cast<float>(nes_frames_per_cell) * nes_frame_time;
     float dt_total = m_DtInSecondsRemaining + dt;
 
-    uint32_t drop_count = 0;
+    uint32_t harddrop_count = 0;
     while (dt_total > dt_level + 0.00000001) {
-        drop_count += 1;
+        harddrop_count += 1;
         dt_total -= dt_level;
     }
 
     m_DtInSecondsRemaining = dt_total;
-    return drop_count;
+    return harddrop_count;
 }
 
-void Tetris::DrawPauseMenu(RenderGroup &render_group) {
-    ImGui::Begin("TetrisPause");
+TetrisRunningState Tetris::Draw(RenderGroup &render_group) {
+    TetrisRunningState running_state = m_RunningState;
+
+    m_Board.Draw(m_Level, render_group);
+    m_ActiveTetromino.Draw(render_group);
+
+    DrawNextTetromino(render_group);
+    DrawStatistics(render_group);
+    DrawLineCounter(render_group);
+    DrawLevel(render_group);
+    DrawScore(render_group);
+
+    // Todo: Use transparency
+    if (running_state == TetrisRunningState::Pause) {
+        running_state = DrawPauseMenu(render_group);
+    }
+    else if (m_RunningState == TetrisRunningState::GameOver) {
+        running_state = DrawGameOverMenu(render_group);
+    }
+
+    return running_state;
+}
+
+TetrisRunningState Tetris::DrawPauseMenu(RenderGroup &render_group) {
+    TetrisRunningState running_state = m_RunningState;
+
+    ImGui::Begin("TetrisPause", nullptr, ImGuiWindowFlags_NoFocusOnAppearing);
     if (ImGui::Button("Resume")) {
-        m_Paused = false;
+        running_state = TetrisRunningState::Resume;
     }
     if (ImGui::Button("Exit")) {
-        m_Running = false;
+        running_state = TetrisRunningState::Exit;
     }
     ImGui::End();
+
+    return running_state;
+}
+
+TetrisRunningState Tetris::DrawGameOverMenu(RenderGroup &render_group) {
+    TetrisRunningState running_state = m_RunningState;
+
+    ImGui::Begin("TetrisGameOver", nullptr, ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::Text("Score = %d", m_Score);
+    ImGui::Text("HighScore = %d", m_HighScore);
+    if (ImGui::Button("Restart")) {
+        running_state = TetrisRunningState::Restart;
+    }
+    if (ImGui::Button("Exit")) {
+        running_state = TetrisRunningState::Exit;
+    }
+    ImGui::End();
+
+    return running_state;
 }
 
 void Tetris::DrawLineCounter(RenderGroup &render_group) {

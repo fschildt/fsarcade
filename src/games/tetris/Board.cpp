@@ -20,10 +20,17 @@ Board::Board() {
 int32_t Board::PlaceTetromino(Tetromino &tetromino) {
     BoardPos pos = tetromino.GetPos();
     TetrominoId id = tetromino.GetId();
-
-    // place in Board's Bitmap
     uint16_t tetromino_bitmap[4];
     tetromino.GetBitmap(tetromino_bitmap);
+
+
+    // check if Tetromino cannot be placed (Game Over)
+    if (tetromino.IsCollisionWithBoard()) {
+        return -1;
+    }
+
+
+    // place in Board's Bitmap
     m_Bitmap[pos.y+0] |= tetromino_bitmap[0];
     m_Bitmap[pos.y+1] |= tetromino_bitmap[1];
     m_Bitmap[pos.y+2] |= tetromino_bitmap[2];

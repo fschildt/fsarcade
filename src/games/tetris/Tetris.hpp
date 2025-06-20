@@ -6,6 +6,14 @@
 #include <games/tetris/Board.hpp>
 #include <renderer/RenderGroup.hpp>
 
+enum class TetrisRunningState {
+    Resume,
+    Pause,
+    GameOver,
+    Restart,
+    Exit
+};
+
 
 class Tetris : public Game {
 public:
@@ -14,24 +22,26 @@ public:
     void HandleTetrominoPlacement();
 
 private:
-    void UpdateRunning(SDL_Event &event, float dt);
-    void UpdatePaused(SDL_Event &event);
+    void Restart();
+    void UpdateResumeState(SDL_Event &event);
+    void UpdatePauseState(SDL_Event &event);
 
-    uint32_t GetDropCount(float dt);
+    uint32_t GetHarddropCount(float dt);
 
+    TetrisRunningState Draw(RenderGroup &render_group);
     void DrawLineCounter(RenderGroup &render_group);
     void DrawStatistics(RenderGroup &render_group);
-
     void DrawScore(RenderGroup &render_group);
     void DrawNextTetromino(RenderGroup &render_group);
     void DrawLevel(RenderGroup &render_group);
 
-    void DrawPauseMenu(RenderGroup &render_group);
+    TetrisRunningState DrawPauseMenu(RenderGroup &render_group);
+    TetrisRunningState DrawGameOverMenu(RenderGroup &render_group);
+
 
 
 private:
-    bool m_Paused = false;
-    bool m_Running = true;
+    TetrisRunningState m_RunningState = TetrisRunningState::Resume;
 
     float m_DtInSecondsRemaining = 0.0f;
     uint64_t m_MillisecondsSinceT0Last = SDL_GetTicks();
@@ -46,6 +56,8 @@ private:
     int32_t m_StartingLevel = 0;
     int32_t m_Level = 0;
     int32_t m_SoftdropCounter = 0;
+
+    int32_t m_HighScore = 0;
 
     ImGuiWindowFlags m_ImGuiWindowFlags = ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoScrollbar;
 };

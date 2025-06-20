@@ -89,6 +89,11 @@ void Tetromino::GetBitmap(uint16_t *bitmap) {
     GetBitmap(m_Id, m_Pos, m_Ori, bitmap);
 }
 
+bool Tetromino::IsCollisionWithBoard() {
+    bool is_collision = IsCollisionWithBoard(m_Id, m_Pos, m_Ori, m_BoardBitmap);
+    return is_collision;
+}
+
 void Tetromino::MaybeRotate(TetrominoRotation rotation) {
     int32_t rot = static_cast<int32_t>(rotation);
     int32_t ori = (m_Ori + rot) % 4;

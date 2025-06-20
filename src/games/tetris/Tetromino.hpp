@@ -28,7 +28,9 @@ public:
 
     TetrominoId GetId();
     BoardPos GetPos();
+    int32_t GetOri();
     void GetBitmap(uint16_t *bitmap);
+    bool IsCollisionWithBoard(); // for last tetromino to check game over
 
     bool MaybeMoveDown();
     void MaybeMoveHorizontally(TetrominoDirection direction);
