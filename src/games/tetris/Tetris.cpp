@@ -4,8 +4,6 @@
 #include <games/tetris/Tetris.hpp>
 #include <imgui.h>
 
-#include <iostream>
-
 // Todo: change to new font scaling api in imgui first
 // Todo: test text with hardcoded gap + dummy to ensure it gets placed as expected
 
@@ -171,7 +169,7 @@ uint32_t Tetris::GetHarddropCount(float dt) {
     float dt_total = m_DtInSecondsRemaining + dt;
 
     uint32_t harddrop_count = 0;
-    while (dt_total > dt_level + 0.00000001) {
+    while (dt_total > dt_level) {
         harddrop_count += 1;
         dt_total -= dt_level;
     }
@@ -206,7 +204,7 @@ TetrisRunningState Tetris::Draw(RenderGroup &render_group) {
 TetrisRunningState Tetris::DrawPauseMenu(RenderGroup &render_group) {
     TetrisRunningState running_state = m_RunningState;
 
-    ImGui::Begin("TetrisPause", nullptr, ImGuiWindowFlags_NoFocusOnAppearing);
+    ImGui::Begin("TetrisPause", nullptr, s_MenuImGuiWindowFlags);
     if (ImGui::Button("Resume")) {
         running_state = TetrisRunningState::Resume;
     }
@@ -221,7 +219,7 @@ TetrisRunningState Tetris::DrawPauseMenu(RenderGroup &render_group) {
 TetrisRunningState Tetris::DrawGameOverMenu(RenderGroup &render_group) {
     TetrisRunningState running_state = m_RunningState;
 
-    ImGui::Begin("TetrisGameOver", nullptr, ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_AlwaysAutoResize);
+    ImGui::Begin("TetrisGameOver", nullptr, s_MenuImGuiWindowFlags);
     ImGui::Text("Score = %d", m_Score);
     ImGui::Text("HighScore = %d", m_HighScore);
     if (ImGui::Button("Restart")) {
@@ -240,7 +238,7 @@ void Tetris::DrawLineCounter(RenderGroup &render_group) {
     ImVec2 screen_pos = render_group.ViewPosToScreenPosImGui(view_pos);
 
     ImGui::SetNextWindowPos(screen_pos);
-    ImGui::Begin("TetrisLines", nullptr, m_ImGuiWindowFlags);
+    ImGui::Begin("TetrisLines", nullptr, s_DefaultImGuiWindowFlags);
     ImGui::Text("LINES - %d", m_LineCounter);
     ImGui::End();
 }
@@ -283,13 +281,13 @@ void Tetris::DrawStatistics(RenderGroup &render_group) {
 
 
     ImGui::SetNextWindowPos(screen_text_title_pos);
-    ImGui::Begin("TetrisStatisticsTitle", nullptr, m_ImGuiWindowFlags);
+    ImGui::Begin("TetrisStatisticsTitle", nullptr, s_DefaultImGuiWindowFlags);
     ImGui::Text("STATISTICS");
     ImGui::End();
 
 
     ImGui::SetNextWindowPos(screen_text_pos);
-    ImGui::Begin("TetrisStatistics", nullptr, m_ImGuiWindowFlags);
+    ImGui::Begin("TetrisStatistics", nullptr, s_DefaultImGuiWindowFlags);
 
     ImGui::Text("%d", m_TetrominoCounters[(size_t)TETROMINO_T]);
     ImGui::Dummy(screen_text_gap);
@@ -314,7 +312,7 @@ void Tetris::DrawScore(RenderGroup &render_group) {
     ImVec2 screen_pos = render_group.ViewPosToScreenPosImGui(view_pos);
 
     ImGui::SetNextWindowPos(screen_pos);
-    ImGui::Begin("TetrisScore", nullptr, m_ImGuiWindowFlags);
+    ImGui::Begin("TetrisScore", nullptr, s_DefaultImGuiWindowFlags);
     ImGui::Text("Score");
     ImGui::Text("%d", m_Score);
     ImGui::End();
@@ -325,7 +323,7 @@ void Tetris::DrawNextTetromino(RenderGroup &render_group) {
     ImVec2 text_screen_pos = render_group.ViewPosToScreenPosImGui(text_view_pos);
 
     ImGui::SetNextWindowPos(text_screen_pos);
-    ImGui::Begin("TetrisNextTetromino", nullptr, m_ImGuiWindowFlags);
+    ImGui::Begin("TetrisNextTetromino", nullptr, s_DefaultImGuiWindowFlags);
     ImGui::Text("Next");
     ImGui::End();
 
@@ -339,7 +337,7 @@ void Tetris::DrawLevel(RenderGroup &render_group) {
     ImVec2 screen_pos = render_group.ViewPosToScreenPosImGui(view_pos);
 
     ImGui::SetNextWindowPos(screen_pos);
-    ImGui::Begin("TetrisLevel", nullptr, m_ImGuiWindowFlags);
+    ImGui::Begin("TetrisLevel", nullptr, s_DefaultImGuiWindowFlags);
     ImGui::Text("Level");
     ImGui::Text("%d", m_Level);
     ImGui::End();

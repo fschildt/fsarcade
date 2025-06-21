@@ -38,6 +38,9 @@ private:
     TetrisRunningState DrawPauseMenu(RenderGroup &render_group);
     TetrisRunningState DrawGameOverMenu(RenderGroup &render_group);
 
+private:
+    static constexpr ImGuiWindowFlags s_MenuImGuiWindowFlags = ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_AlwaysAutoResize;
+    static constexpr ImGuiWindowFlags s_DefaultImGuiWindowFlags = ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoScrollbar;
 
 
 private:
@@ -58,8 +61,6 @@ private:
     int32_t m_SoftdropCounter = 0;
 
     int32_t m_HighScore = 0;
-
-    ImGuiWindowFlags m_ImGuiWindowFlags = ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoScrollbar;
 };
 
 

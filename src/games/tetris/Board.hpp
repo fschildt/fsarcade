@@ -4,8 +4,6 @@
 #include <renderer/RenderGroup.hpp>
 
 class Tetromino;
-enum class TetrominoId : uint8_t;
-enum class TetrominoDirection;
 
 struct BoardPos {
     int32_t x;
