@@ -1,5 +1,6 @@
 #pragma once
 
+#include "games/tetris/Tetris.hpp"
 #include <games/Game.hpp>
 #include <unordered_set>
 
@@ -14,6 +15,14 @@ namespace std {
     };
 }
 
+enum class MinesweeperRunState {
+    Resume,
+    Pause,
+    GameOver,
+    Restart,
+    Exit
+};
+
 class Minesweeper : public Game {
     public:
         Minesweeper();
@@ -21,11 +30,15 @@ class Minesweeper : public Game {
 
         bool Update(std::vector<SDL_Event> &events, RenderGroup &render_group) override;
 
-        void ProcessEventDuringPause(SDL_Event &event, RenderGroup &render_group);
-        void ProcessEventDuringResume(SDL_Event &event, RenderGroup &render_group);
+        MinesweeperRunState ProcessEventDuringPause(SDL_Event &event, RenderGroup &render_group);
+        MinesweeperRunState ProcessEventDuringResume(SDL_Event &event, RenderGroup &render_group);
 
 
     private:
+        void Reinit();
+        void InitIsMineBitmap(int32_t mine_count);
+        void InitAdjacentMineCounters();
+
         void Uncover(int32_t x, int32_t y);
         void ToggleFlag(int32_t x, int32_t y);
 
@@ -33,13 +46,12 @@ class Minesweeper : public Game {
         bool IsFlagged(int32_t x, int32_t y);
         bool IsMine(int32_t x, int32_t y);
 
-        int32_t CountAdjacentMines(int32_t x, int32_t y);
-
         V2F32 ScreenPosToViewPos(V2F32 screen_pos, RenderGroup &render_group);
 
 
     private:
-        void DrawPauseMenu(RenderGroup &render_group);
+        MinesweeperRunState DrawPauseMenu(RenderGroup &render_group);
+        MinesweeperRunState DrawGameOverMenu(RenderGroup &render_group);
         void DrawBoard(RenderGroup &render_group);
 
 
@@ -49,8 +61,7 @@ class Minesweeper : public Game {
 
 
     private:
-        bool m_IsRunning = true;
-        bool m_IsPaused = false;
+        MinesweeperRunState m_RunState = MinesweeperRunState::Resume;
 
         float m_WorldWidth = 4.0f;
         float m_WorldHeight = 3.0f;
@@ -62,12 +73,10 @@ class Minesweeper : public Game {
         V2F32 m_CellOuterViewSize;
         V2F32 m_CellInnerViewSize;
 
-        std::unordered_set<V2ST> m_CoveredPositions;
-        std::unordered_set<V2ST> m_FlaggedPositions;
-        std::vector<V2ST> m_UncoveredPositions;
         uint32_t m_IsCoveredBitmap[MAX_MAP_HEIGHT] {};
         uint32_t m_IsFlaggedBitmap[MAX_MAP_HEIGHT] {};
         uint32_t m_IsMineBitmap[MAX_MAP_HEIGHT] {};
+        int32_t m_AdjacentMineCounters[MAX_MAP_WIDTH * MAX_MAP_HEIGHT] {};
 };
 
 

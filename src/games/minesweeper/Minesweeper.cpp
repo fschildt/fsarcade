@@ -1,3 +1,5 @@
+#include <algorithm>
+#include <asm-generic/errno.h>
 #include <renderer/RenderGroup.hpp>
 #include <games/minesweeper/Minesweeper.hpp>
 #include <random>
@@ -23,22 +25,27 @@ Minesweeper::Minesweeper() {
     m_CellOuterViewSize = {cell_size, cell_size};
     m_CellInnerViewSize = {cell_size_without_border, cell_size_without_border};
 
+    // Todo: assert various stuff
 
-    m_UncoveredPositions.reserve(MAX_MAP_WIDTH * MAX_MAP_HEIGHT);
-    m_CoveredPositions.reserve((size_t)(1.3f * MAX_MAP_WIDTH * MAX_MAP_HEIGHT));
+    Reinit();
+}
 
-    for (int32_t y = 0; y < m_MapHeight; y++) {
-        for (int32_t x = 0; x < m_MapHeight; x++) {
-            m_CoveredPositions.emplace(x, y);
-        }
-    }
-
-
+void Minesweeper::Reinit() {
     int32_t mine_count = 40;
-    assert(m_MapWidth == 16 && m_MapHeight == 16);
+    memset(m_IsCoveredBitmap, 0xff, sizeof(m_IsCoveredBitmap));
+    memset(m_IsFlaggedBitmap, 0 , sizeof(m_IsFlaggedBitmap));
+    InitIsMineBitmap(mine_count);
+    InitAdjacentMineCounters();
+}
+
+void Minesweeper::InitIsMineBitmap(int32_t mine_count) {
+    assert(mine_count < m_MapWidth * m_MapHeight);
+
+    memset(m_IsMineBitmap, 0 , sizeof(m_IsMineBitmap));
 
     std::mt19937 rng((std::random_device()()));
     std::uniform_int_distribution<int32_t> dist(0, m_MapWidth * m_MapHeight - 1);
+
     while (mine_count) {
         int32_t random_pos = dist(rng);
         int32_t x = random_pos / m_MapWidth;
@@ -50,48 +57,86 @@ Minesweeper::Minesweeper() {
     }
 }
 
+void Minesweeper::InitAdjacentMineCounters() {
+    for (int32_t y = 0; y < m_MapHeight; y++) {
+        int32_t y0 = y > 0 ? y-1 : y;
+        int32_t y1 = y < m_MapHeight-1 ? y+1 : y;
+
+        for (int32_t x = 0; x < m_MapHeight; x++) {
+            int32_t x0 = x > 0 ? x-1 : x;
+            int32_t x1 = x < m_MapWidth-1 ? x+1 : x;
+
+            int32_t adjacent_mine_counter = 0;
+            for (int32_t inner_y = y0; inner_y <= y1; inner_y++) {
+                for (int32_t inner_x = x0; inner_x <= x1; inner_x++) {
+                    if (IsMine(inner_y, inner_x)) {
+                        adjacent_mine_counter++;
+                    }
+                }
+            }
+
+            m_AdjacentMineCounters[y * m_MapWidth + x] = adjacent_mine_counter;
+        }
+    }
+}
+
 bool Minesweeper::Update(std::vector<SDL_Event> &events, RenderGroup &render_group) {
     V3F32 clear_color = {0.3f, 0.2f, 0.3f};
     render_group.SetCameraSize(4.0f, 3.0f);
     render_group.Clear(clear_color);
 
+    if (m_RunState == MinesweeperRunState::Restart) {
+        Reinit();
+        m_RunState = MinesweeperRunState::Resume;
+    }
+
     for (SDL_Event &event : events) {
-        if (!m_IsRunning) {
+        if (m_RunState == MinesweeperRunState::Exit) {
             return false;
         }
-        if (m_IsPaused) {
-            ProcessEventDuringPause(event, render_group);
+        else if (m_RunState == MinesweeperRunState::Pause) {
+            m_RunState = ProcessEventDuringPause(event, render_group);
         }
-        else {
-            ProcessEventDuringResume(event, render_group);
+        else if (m_RunState == MinesweeperRunState::Resume) {
+            m_RunState = ProcessEventDuringResume(event, render_group);
         }
     }
 
-    if (m_IsPaused) {
-        DrawPauseMenu(render_group);
+    if (m_RunState == MinesweeperRunState::Pause) {
+        m_RunState = DrawPauseMenu(render_group);
+    }
+    else if (m_RunState == MinesweeperRunState::GameOver) {
+        m_RunState = DrawGameOverMenu(render_group);
     }
 
     DrawBoard(render_group);
 
-    return m_IsRunning;
+    bool keep_running = m_RunState != MinesweeperRunState::Exit;
+    return keep_running;
 }
 
-void Minesweeper::ProcessEventDuringPause(SDL_Event &event, RenderGroup &render_group) {
+MinesweeperRunState Minesweeper::ProcessEventDuringPause(SDL_Event &event, RenderGroup &render_group) {
+    MinesweeperRunState run_state = MinesweeperRunState::Pause;
+
     switch (event.type) {
     case SDL_EVENT_KEY_DOWN: {
         if (event.key.key == SDLK_ESCAPE) {
-            m_IsPaused = false;
+            run_state = MinesweeperRunState::Resume;
         }
-    }
+    } break;
     default:;
     }
+
+    return run_state;
 }
 
-void Minesweeper::ProcessEventDuringResume(SDL_Event &event, RenderGroup &render_group) {
+MinesweeperRunState Minesweeper::ProcessEventDuringResume(SDL_Event &event, RenderGroup &render_group) {
+    MinesweeperRunState run_state = MinesweeperRunState::Resume;
+
     switch (event.type) {
     case SDL_EVENT_KEY_DOWN: {
         if (event.key.key == SDLK_ESCAPE) {
-            m_IsPaused = true;
+            run_state = MinesweeperRunState::Pause;
         }
     } break;
 
@@ -99,29 +144,35 @@ void Minesweeper::ProcessEventDuringResume(SDL_Event &event, RenderGroup &render
         V2F32 click_screen_pos = {event.button.x, (float)render_group.m_ScreenHeight -1 - event.button.y};
         V2F32 click_view_pos = ScreenPosToViewPos(click_screen_pos, render_group);
 
-        int32_t x = (int32_t)((click_view_pos.x - m_MapViewPos.x) / m_CellOuterViewSize.x);
-        int32_t y = (int32_t)((click_view_pos.y - m_MapViewPos.y) / m_CellOuterViewSize.y);
-        if (x < 0 || x >= m_MapWidth) {
+        float x_adjusted = click_view_pos.x - m_MapViewPos.x;
+        float y_adjusted = click_view_pos.y - m_MapViewPos.y;
+        if (x_adjusted < 0.0f) {
             break;
         }
-        if (y < 0 || y >= m_MapHeight) {
+        if (y_adjusted < 0.0f) {
+            break;
+        }
+
+        int32_t x = (int32_t)(x_adjusted / m_CellOuterViewSize.x);
+        int32_t y = (int32_t)(y_adjusted / m_CellOuterViewSize.y);
+        if (x >= m_MapWidth) {
+            break;
+        }
+        if (y >= m_MapHeight) {
             break;
         }
 
         if (event.button.button == 1) {
             if (IsCovered(x, y)) {
                 Uncover(x, y);
+                if (IsMine(x, y)) {
+                    run_state = MinesweeperRunState::GameOver;
+                }
             }
         }
         else if (event.button.button == 3) {
             if (IsCovered(x, y)) {
                 ToggleFlag(x ,y);
-                if (IsFlagged(x, y)) {
-                    m_FlaggedPositions.insert(V2ST(x, y));
-                }
-                else {
-                    m_FlaggedPositions.erase(V2ST(x, y));
-                }
             }
         }
 
@@ -129,25 +180,18 @@ void Minesweeper::ProcessEventDuringResume(SDL_Event &event, RenderGroup &render
 
     default:;
     }
+
+    return run_state;
 }
 
 void Minesweeper::Uncover(int32_t x, int32_t y) {
     m_IsCoveredBitmap[y] &= ~(1 << x);
-    m_CoveredPositions.erase(V2ST(x, y));
-    m_UncoveredPositions.emplace_back(x, y);
     if (IsMine(x, y)) {
-        m_IsRunning = false;
+        m_RunState = MinesweeperRunState::GameOver;
     }
     if (IsFlagged(x, y)) {
         ToggleFlag(x, y);
-        if (IsFlagged(x, y)) {
-            m_FlaggedPositions.insert(V2ST(x, y));
-        }
-        else {
-            m_FlaggedPositions.erase(V2ST(x, y));
-        }
     }
-    CountAdjacentMines(x, y);
 }
 
 void Minesweeper::ToggleFlag(int32_t x, int32_t y) {
@@ -169,25 +213,6 @@ bool Minesweeper::IsMine(int32_t x, int32_t y) {
     return is_mine;
 }
 
-int32_t Minesweeper::CountAdjacentMines(int32_t x, int32_t y) {
-    assert(!IsMine(x, y));
-
-    int32_t count = 0;
-    int32_t x0 = x - 1 >= 0 ? x-1 : 0;
-    int32_t x1 = x + 1 < m_MapWidth ? x + 1 : x;
-    int32_t y0 = y - 1 >= 0 ? y-1 : 0;
-    int32_t y1 = y + 1 < m_MapHeight ? y + 1 : y;
-    for (int32_t y = y0; y <= y1; y++) {
-        for (int32_t x = x0; x <= x1; x++) {
-            if (m_IsMineBitmap[y] & 1 << x) {
-                count++;
-            }
-        }
-    }
-    printf("count = %d\n", count);
-    return count;
-}
-
 V2F32 Minesweeper::ScreenPosToViewPos(V2F32 screen_pos, RenderGroup &render_group) {
     // e.g. [0, 1024] -> [0, 1] -> [0, 4]
     // e.g. [0,  768] -> [0, 1] -> [0, 3]
@@ -200,50 +225,88 @@ V2F32 Minesweeper::ScreenPosToViewPos(V2F32 screen_pos, RenderGroup &render_grou
     return view_pos;
 }
 
-void Minesweeper::DrawPauseMenu(RenderGroup &render_group) {
-    ImGui::Begin("TetrisPause");
+MinesweeperRunState Minesweeper::DrawPauseMenu(RenderGroup &render_group) {
+    MinesweeperRunState run_state = m_RunState;
+
+    ImGui::Begin("MinesweeperPause");
     if (ImGui::Button("Resume")) {
-        m_IsPaused = false;
+        run_state = MinesweeperRunState::Resume;
     }
     if (ImGui::Button("Exit")) {
-        m_IsRunning = false;
+        run_state = MinesweeperRunState::Exit;
     }
     ImGui::End();
+
+    return run_state;
+}
+
+MinesweeperRunState Minesweeper::DrawGameOverMenu(RenderGroup &render_group) {
+    MinesweeperRunState run_state = m_RunState;
+
+    ImGui::Begin("MinesweeperGameOver");
+    ImGui::Text("Score = ???");
+    if (ImGui::Button("Restart")) {
+        run_state = MinesweeperRunState::Restart;
+    }
+    if (ImGui::Button("Exit")) {
+        run_state = MinesweeperRunState::Exit;
+    }
+    ImGui::End();
+
+    return run_state;
 }
 
 void Minesweeper::DrawBoard(RenderGroup &render_group) {
     V3F32 covered_cell_color = V3F32(0.4f, 0.4f, 0.4f);
     V3F32 uncovered_cell_color = V3F32(0.2f, 0.2f, 0.2f);
+    V3F32 flag_color = {0.6f, 0.3f, 03.f};
+    V3F32 mine_color = {0.8f, 0.2f, 0.2f};
 
-    for (V2ST pos : m_CoveredPositions) {
-        V3F32 world_pos = {
-            m_MapViewPos.x + (float)pos.x * m_CellOuterViewSize.x,
-            m_MapViewPos.y + (float)pos.y * m_CellOuterViewSize.y,
-            0.0f
-        };
-        render_group.PushRectangle(world_pos, m_CellInnerViewSize, covered_cell_color);
-    }
-    for (V2ST pos: m_FlaggedPositions) {
-        V2F32 draw_size = {m_CellInnerViewSize.x * 0.5f, m_CellInnerViewSize.y * 0.5f};
-        V2F32 draw_offset = {
-            (m_CellInnerViewSize.x - draw_size.x) / 2,
-            (m_CellInnerViewSize.y - draw_size.y) / 2
-        };
-        V3F32 world_pos = {
-            m_MapViewPos.x + (float)pos.x * m_CellOuterViewSize.x + draw_offset.x,
-            m_MapViewPos.y + (float)pos.y * m_CellOuterViewSize.y + draw_offset.y,
-            1.0f
-        };
-        V3F32 flag_color = {0.6f, 0.3f, 03.f};
-        render_group.PushRectangle(world_pos, draw_size, flag_color);
-    }
-    for (V2ST pos : m_UncoveredPositions) {
-        V3F32 world_pos = {
-            m_MapViewPos.x + (float)pos.x * m_CellOuterViewSize.x,
-            m_MapViewPos.y + (float)pos.y * m_CellOuterViewSize.y,
-            0.0f
-        };
-        render_group.PushRectangle(world_pos, m_CellInnerViewSize, uncovered_cell_color);
+    V2F32 flag_draw_size = {m_CellInnerViewSize.x * 0.5f, m_CellInnerViewSize.y * 0.5f};
+    V2F32 flag_draw_offset = {
+        (m_CellInnerViewSize.x - flag_draw_size.x) / 2,
+        (m_CellInnerViewSize.y - flag_draw_size.y) / 2
+    };
+
+
+
+    // Todo: avoid if-statement by having them in separate contiguous locations?
+
+    for (int32_t y = 0; y < m_MapHeight; y++) {
+        for (int32_t x = 0; x < m_MapWidth; x++) {
+            V3F32 world_pos = {
+                m_MapViewPos.x + (float)x * m_CellOuterViewSize.x,
+                m_MapViewPos.y + (float)y * m_CellOuterViewSize.y,
+                0.0f
+            };
+            bool is_covered = IsCovered(x, y);
+            bool is_flagged = IsFlagged(x, y);
+            bool is_mine = IsMine(x, y);
+
+            if (is_covered) {
+                render_group.PushRectangle(world_pos, m_CellInnerViewSize, covered_cell_color);
+            }
+            else {
+                render_group.PushRectangle(world_pos, m_CellInnerViewSize, uncovered_cell_color);
+            }
+            if (is_flagged) {
+                assert(IsCovered(x ,y));
+                V3F32 flag_world_pos = {
+                    world_pos.x + flag_draw_offset.x,
+                    world_pos.y + flag_draw_offset.y,
+                    1.0f
+                };
+                render_group.PushRectangle(flag_world_pos, flag_draw_size, flag_color);
+            }
+            if (!is_covered && is_mine) {
+                V3F32 mine_world_pos = {
+                    world_pos.x,
+                    world_pos.y,
+                    2.0f
+                };
+                render_group.PushRectangle(mine_world_pos, m_CellInnerViewSize, mine_color);
+            }
+        }
     }
 }
 

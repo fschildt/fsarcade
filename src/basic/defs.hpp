@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cassert>
+#include <iostream>
 
 #define ARRAY_COUNT(x) (sizeof(x) / sizeof(x[0]))
 
